@@ -8,32 +8,34 @@ BOOTDIR	= ./boot
 KERNEDIR= ./kernel
 IMAGE   = PianOS.img
 
+
+
 $(IMAGE): $(BOOTDIR)/bootsect.bin	$(BOOTDIR)/setup.bin $(BOOTDIR)/head.bin	
 # 1.44MB 可在bochs中使用，以便调试
-	@dd  if=/dev/zero    			of=PianOS.img   bs=1474560	count=1 	2>>/dev/null
-	@dd 	if=$(BOOTDIR)/bootsect.bin	of=PianOS.img   bs=512 		count=1 conv=notrunc 2>>/dev/null
+	@dd if=/dev/zero    			of=PianOS.img   bs=1474560	count=1 	2>>/dev/null
+	@dd if=$(BOOTDIR)/bootsect.bin	of=PianOS.img   bs=512 		count=1 conv=notrunc 2>>/dev/null
 	@dd	if=$(BOOTDIR)/setup.bin		of=PianOS.img	bs=512 		count=4 seek=1 conv=notrunc 2>>/dev/null
 	@dd	if=$(BOOTDIR)/head.bin		of=PianOS.img	bs=512 		seek=5 	conv=notrunc 2>>/dev/null
-	-@echo "系统编译成功"
+	-@echo "\e[01;32m[Bulid Successfully]\e[00m"
 
-$(BOOTDIR)/bootsect.bin: $(BOOTDIR)/bootsect.asm
+$(BOOTDIR)/%.bin: $(BOOTDIR)/%.asm
 	$(AS) $^ -o $@ 
-
-$(BOOTDIR)/setup.bin: $(BOOTDIR)/setup.asm
-	$(AS) $^ -o $@
 
 $(BOOTDIR)/head.bin: $(BOOTDIR)/head.asm  $(KERNEDIR)/kernel.asm
 	$(AS) $(BOOTDIR)/head.asm -o $@ -l $(KERNEDIR)/kernel.lst
 
-$(KERNEDIR)/kernel.asm: $(KERNEDIR)/main.o $(KERNEDIR)/asmfun.o
-	ld -m elf_i386 -r -s $^ -o $(KERNEDIR)/kernel.o
+$(KERNEDIR)/kernel.asm: $(KERNEDIR)/main.o $(KERNEDIR)/fonts.o 
+	ld -m elf_i386 -r -s $^ -o $(KERNEDIR)/pre_kernel.o
+	@../tools/objconv -np:.: $(KERNEDIR)/pre_kernel.o $(KERNEDIR)/kernel.o	>/dev/null
 	@../tools/objconv -fnasm $(KERNEDIR)/kernel.o	>/dev/null
 	@sed -i -e 's/[a-z]*execute//g' -e 's/: *function//g' $(KERNEDIR)/kernel.asm
 
-$(KERNEDIR)/main.o: $(KERNEDIR)/main.cc
-	$(CC) -m32 -c $^ -o $@
 $(KERNEDIR)/asmfun.o: $(KERNEDIR)/asmfun.c
 	$(CC) -c -fasm-blocks -m32 $^ -o $@
+
+$(KERNEDIR)/%.o: $(KERNEDIR)/%.cc
+	$(CC) -m32 -c $^ -o $@
+
 
 run : PianOS.img
 	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE)  

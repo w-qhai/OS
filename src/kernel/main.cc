@@ -1,6 +1,7 @@
-#include <cstdint>
-
 #include "asmfun.h"
+#include "fonts.h"
+
+// #include <string>
 
 // 显存 0xa0000~0xaffff
 char* const vram = (char*)0xa0000;
@@ -27,15 +28,17 @@ struct Point {
 
 void fill_box(int x1, int y1, int x2, int y2, int color);
 void draw_char(char c, int x, int y, int color);
+void draw_string(char* str, int x, int y, int color);
 
+// char* str = "PianOS";
 int main(void) {
-    init_info = *(InitInfo*)init_addr;
 
     fill_box(0, 0, scrn_w, scrn_h, 3);
     fill_box(0, scrn_h - 21, scrn_w, scrn_h - 20, 15);
     fill_box(0, scrn_h - 20, scrn_w, scrn_h, 7);
 
-    // fill_box(50, 50, init_info.scrn_w, init_info.scrn_w, 7);
+    draw_char(0, 10, 10, 0);
+    draw_string("PianOS", 10, 26, 5);
     while(1);
     
     return 0;
@@ -56,7 +59,15 @@ void draw_char(char c, int x, int y, int color) {
     // 字体 16 * 8
     for (int i = 0; i < 16; i++) {
         for (int j = 0; j < 8; j++) {
-            vram[(y + i)* scrn_h + x + j] = color;
+            if (fonts[c][i] & (0x80 >> j)) {
+                vram[(y + i)* scrn_w + x + j] = color;
+            }
         }
+    }
+}
+
+void draw_string(char* str, int x, int y, int color) {
+    for (int i = 0; str[i]; i++) {
+        draw_char(str[i], x + i * 9, y, color);
     }
 }
