@@ -24,7 +24,7 @@ $(BOOTDIR)/%.bin: $(BOOTDIR)/%.asm
 $(BOOTDIR)/head.bin: $(BOOTDIR)/head.asm  $(KERNEDIR)/kernel.asm
 	$(AS) $(BOOTDIR)/head.asm -o $@ -l $(KERNEDIR)/kernel.lst
 
-$(KERNEDIR)/kernel.asm: $(KERNEDIR)/main.o $(KERNEDIR)/fonts.o 
+$(KERNEDIR)/kernel.asm: $(KERNEDIR)/asmfun.o $(KERNEDIR)/constants.o  $(KERNEDIR)/main.o $(KERNEDIR)/fonts.o 
 	ld -m elf_i386 -r -s $^ -o $(KERNEDIR)/pre_kernel.o
 	@../tools/objconv -np:.: $(KERNEDIR)/pre_kernel.o $(KERNEDIR)/kernel.o	>/dev/null
 	@../tools/objconv -fnasm $(KERNEDIR)/kernel.o	>/dev/null
@@ -34,8 +34,8 @@ $(KERNEDIR)/asmfun.o: $(KERNEDIR)/asmfun.c
 	$(CC) -c -fasm-blocks -m32 $^ -o $@
 
 $(KERNEDIR)/%.o: $(KERNEDIR)/%.cc
-	$(CC) -m32 -c $^ -o $@
-
+	$(CC) -m32 -nostdlib -g -c $^ -o $@ 
+#	$(CC) -m32 -fno-asynchronous-unwind-tables -fno-pie -fcf-protection=none -mmanual-endbr -c $^ -o $@
 
 run : PianOS.img
 	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE)  

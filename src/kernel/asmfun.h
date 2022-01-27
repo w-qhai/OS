@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 
 /**
  * @brief 颜色代码
