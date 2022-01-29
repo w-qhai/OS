@@ -22,7 +22,7 @@ int main(void) {
     draw_string("PianOS", 2, scrn_h - 18, 12);
 
     int idt = get_idt();
-    set_idt_seg((IDT_Descriptor*)idt + 0x21, (int)(void*)fcun, 2 << 3, 0x008e);
+    set_idt_seg((IDT_Descriptor*)idt + 0x21, (int)fcun, 8, 0x008e);
 
     draw_number((int)(void*)fcun, 16, 300, 70, 15);
 
