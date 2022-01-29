@@ -2,13 +2,25 @@
 #include "fonts.h"
 #include "graphics.h"
 
-void draw_desktop();
-
-void fcun () {
-    fill_box(200, 50, 8 * 30, 16, 0);
-    draw_string("KeyBoard", 200 + 8 * 30, 50, 15);
-    while (1);
+extern "C" {
+    extern void asm_response_keyboard();
+    void reponse_keyboard () {
+        static bool visable = true;
+        out_byte(0x20, 0x61);
+        if (visable) {
+            draw_string("KeyBoard", 200 + 8 * 30, 50, 15);
+        }
+        else {
+            draw_string("        ", 200 + 8 * 30, 50, 15);
+        }
+        visable = !visable;
+        char c = in_byte(0x0060);
+        // fill_box(0, 0, 100, 16, 0);
+        draw_number(c, 10, 0, 0, 15);
+    }
 }
+
+void draw_desktop();
 
 int main(void) {
     sti();
@@ -22,18 +34,8 @@ int main(void) {
     draw_string("PianOS", 2, scrn_h - 18, 12);
 
     int idt = get_idt();
-    set_idt_seg((IDT_Descriptor*)idt + 0x21, (int)fcun, 8, 0x008e);
+    set_idt_seg((IDT_Descriptor*)idt + 0x21, (int)asm_response_keyboard, 8, 0x008e);
 
-    draw_number((int)(void*)fcun, 16, 300, 70, 15);
-
-    int x = 300;
-    int y = 100;
-    while (idt) {
-        draw_char(idt % 10 + '0', x, y, 6);
-        idt /= 10;
-        x -= 8;
-    }
-    
     while(1);
     
     return 0;

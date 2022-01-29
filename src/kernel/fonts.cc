@@ -287,7 +287,7 @@ void draw_number(int number, int base, int x, int y, int color) {
     }
 
 	for (int i = 0; i < width; i++) {
-		draw_char(s[number % base], x - i * 8, y, color);
+		draw_char(s[number % base], x + (width - i) * 8, y, color);
 		number /= base;
 	}
 }

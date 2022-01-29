@@ -32,11 +32,11 @@ $(KERNEDIR)/kernel.asm: $(BINDIR)/constants.o $(BINDIR)/main.o $(BINDIR)/fonts.o
 	@../tools/objconv -fnasm $(BINDIR)/kernel.o	>/dev/null
 	@sed -i -e 's/[a-z]*execute//g' -e 's/: *function//g' $(BINDIR)/kernel.asm
 
-$(BINDIR)/asmfun.o: $(KERNEDIR)/asmfun.cc
-	$(CC) -c -fasm-blocks -m32 $^ -o $@
+# $(BINDIR)/asmfun.o: $(KERNEDIR)/asmfun.cc
+# 	$(CC) -c -fasm-blocks -m32 $^ -o $@
 
 $(BINDIR)/%.o: $(KERNEDIR)/%.cc
-	$(CC) -m32 -g -c $^ -o $@ 
+	$(CC) -m32  -fasm-blocks -g -c $^ -o $@ 
 #	$(CC) -m32 -fno-asynchronous-unwind-tables -fno-pie -fcf-protection=none -mmanual-endbr -c $^ -o $@
 
 run : PianOS.img

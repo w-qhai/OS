@@ -248,3 +248,7 @@ print_over:
 get_idt:
         mov     eax, _idt
         ret
+
+asm_response_keyboard:
+        call reponse_keyboard
+        iret
