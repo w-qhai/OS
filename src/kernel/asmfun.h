@@ -1,27 +1,28 @@
 #pragma once
+
 #include <stdint.h>
 
-/**
- * @brief 颜色代码
- * 0 黑
- * 1 蓝
- * 2 绿
- * 3 暗蓝
- * 4 红
- * 5 紫
- * 6 暗黄
- * 7 浅灰
- * 8 深灰
- * 9 浅亮蓝
- * a 亮绿
- * b 亮蓝
- * c 亮红
- * d 亮紫
- * e 黄
- * f 白色
- */
+struct GDT_Descriptor
+{
+    uint16_t limit_low, base_low;
+    uint8_t base_mid, more_flag;
+    uint8_t limit_high, base_hig;
+};
+
+struct IDT_Descriptor {
+    uint16_t offset_low, selector;
+    uint8_t dw_count, more_flags;
+    uint16_t offset_high;
+};
+
+void set_gdt_seg();
+
+void set_idt_seg(IDT_Descriptor* idt, int offset, int selector, int more_flags);
 
 void mem_set(int addr, int bytes, int data);
+
+void load_gdtr(int limit, int addr);
+void load_idtr(int limit, int addr);
 
 void cli();
 void sti();

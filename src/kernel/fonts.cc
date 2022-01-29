@@ -269,9 +269,26 @@ void draw_char(char c, int x, int y, int color) {
     }
 }
 
-void draw_string(char* str, int x, int y, int color) {
+void draw_string(const char* str, int x, int y, int color) {
     for (int i = 0; str[i]; i++) {
         draw_char(str[i], x + i * 8, y, color);
     }
+}
+
+void draw_number(int number, int base, int x, int y, int color) {
+	static char s[17] = "0123456789ABCDEF";
+	static char nums[32];
+	
+	int width = 0;
+	int n = number;
+	while(n != 0) {
+        n /= 10;
+        width++;
+    }
+
+	for (int i = 0; i < width; i++) {
+		draw_char(s[number % base], x - i * 8, y, color);
+		number /= base;
+	}
 }
 

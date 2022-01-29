@@ -2,15 +2,38 @@
 #include "fonts.h"
 #include "graphics.h"
 
-char str[20] = "PianOS";
-
 void draw_desktop();
 
-int main(void) {
+void fcun () {
+    fill_box(200, 50, 8 * 30, 16, 0);
+    draw_string("KeyBoard", 200 + 8 * 30, 50, 15);
+    while (1);
+}
 
-    draw_desktop();
+int main(void) {
+    sti();
+
+    out_byte(0x21, 0b11111001); /* 开放PIC1和键盘中断(11111001) */
+	// out_byte(0x21, 0b11101111); /* 开放鼠标中断(11101111) */
+
+
+    // draw_desktop();
     draw_cursor(120, 100);
-    draw_string(str, 2, scrn_h - 18, 12);
+    draw_string("PianOS", 2, scrn_h - 18, 12);
+
+    int idt = get_idt();
+    set_idt_seg((IDT_Descriptor*)idt + 0x21, (int)(void*)fcun, 2 << 3, 0x008e);
+
+    draw_number((int)(void*)fcun, 16, 300, 70, 15);
+
+    int x = 300;
+    int y = 100;
+    while (idt) {
+        draw_char(idt % 10 + '0', x, y, 6);
+        idt /= 10;
+        x -= 8;
+    }
+    
     while(1);
     
     return 0;

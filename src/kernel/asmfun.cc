@@ -1,5 +1,28 @@
 #include "asmfun.h"
 
+void set_gdt_seg() {
+    
+}
+
+void set_idt_seg(IDT_Descriptor* idt, int offset, int selector, int more_flags) {
+    idt->offset_low  = offset & 0xffff;
+    idt->selector    = selector;
+    idt->dw_count    = (more_flags >> 8) &0xff;
+    idt->more_flags  = (more_flags) & 0xff;
+    idt->offset_high = (offset >> 16) & 0xffff;
+}
+
+// _load_gdtr:		; void load_gdtr(int limit, int addr);
+// 		MOV		AX,[ESP+4]		; limit
+// 		MOV		[ESP+6],AX
+// 		LGDT	[ESP+6]
+// 		RET
+
+// _load_idtr:		; void load_idtr(int limit, int addr);
+// 		
+
+
+
 void cli() {
     __asm {
         cli
@@ -14,8 +37,8 @@ void sti() {
 
 void movb(int addr, int data) {
     __asm {
-        mov     ecx, [esp + 0]
-        mov     al, [esp + 4]
+        mov     ecx, [ebp + 8]
+        mov     al, [ebp + 12]
         mov     [ecx], al
     }
     // *(char*)addr = data;
@@ -23,7 +46,7 @@ void movb(int addr, int data) {
 
 void set_flags(int flags) {
     __asm {
-        mov     eax, [esp]
+        mov     eax, [ebp + 8]
         push    eax
         popfd   
     }
@@ -34,6 +57,22 @@ int get_flags() {
         pushfd
         pop     eax
         ret
+    }
+}
+
+int in_byte(int port) {
+    __asm {
+        mov     edx, [ebp + 8]
+        mov     eax, 0
+        in      ax, dx
+    }
+}
+
+void out_byte(int port, int data) {
+    __asm {
+        mov     edx, [ebp + 8]
+        mov     eax, [ebp + 12]
+        out     dx, al
     }
 }
 
