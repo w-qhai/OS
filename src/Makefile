@@ -26,7 +26,7 @@ $(BINDIR)/%.bin: $(BOOTDIR)/%.asm
 $(BINDIR)/head.bin: $(BOOTDIR)/head.asm  $(KERNEDIR)/kernel.asm
 	$(AS) $(BOOTDIR)/head.asm -o $@ -l $(BINDIR)/kernel.lst
 
-$(KERNEDIR)/kernel.asm: $(BINDIR)/constants.o $(BINDIR)/main.o $(BINDIR)/fonts.o $(BINDIR)/asmfun.o $(BINDIR)/graphics.o
+$(KERNEDIR)/kernel.asm: $(BINDIR)/constants.o $(BINDIR)/main.o $(BINDIR)/fonts.o $(BINDIR)/asmfun.o $(BINDIR)/graphics.o $(BINDIR)/int.o
 	ld -m elf_i386 -r -s $^ -o $(BINDIR)/pre_kernel.o
 	@../tools/objconv -np:.: $(BINDIR)/pre_kernel.o $(BINDIR)/kernel.o	>/dev/null
 	@../tools/objconv -fnasm $(BINDIR)/kernel.o	>/dev/null

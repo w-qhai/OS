@@ -108,11 +108,6 @@ mov cr3,eax ;cr3 - page directory start */
 mov eax,cr0
 or eax,0x80000000  ;添上PG标志。
 mov cr0,eax ; set paging (PG) bit */
- 
-; mov  esi,asmmsg                 ;保护模式DS=0,数据用绝对地址访问
-; mov  cl, 0x09                   ;蓝色字体
-mov  edi, 0xb8000+21*160        ;指定显示在某行,显卡内存地址也需用绝对地址访问     
-;call print_str
      
 ret  ;setup_paging这里用的是返回指令ret。
 ;该返回指令的另一个作用是将压入堆栈中的main程序的地址弹出，
@@ -250,5 +245,13 @@ get_idt:
         ret
 
 asm_response_keyboard:
-        call reponse_keyboard
+        call    response_keyboard
+        iret
+
+asm_response_mouse:
+        call    response_mouse
+        iret
+
+asm_response_int27:
+        call    response_int27
         iret

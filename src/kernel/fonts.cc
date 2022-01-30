@@ -277,7 +277,10 @@ void draw_string(const char* str, int x, int y, int color) {
 
 void draw_number(int number, int base, int x, int y, int color) {
 	static char s[17] = "0123456789ABCDEF";
-	static char nums[32];
+	if (number == 0) {
+		draw_char('0', 8, y, color);
+		return;
+	}
 	
 	int width = 0;
 	int n = number;
