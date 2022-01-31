@@ -40,8 +40,7 @@ $(BINDIR)/%.o: $(KERNEDIR)/%.cc
 #	$(CC) -m32 -fno-asynchronous-unwind-tables -fno-pie -fcf-protection=none -mmanual-endbr -c $^ -o $@
 
 run : PianOS.img
-	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE)  
-
+	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE)
 qemu : PianOS.img
 	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE)
 bochs: PianOS.img

@@ -5,59 +5,29 @@
 
 void draw_desktop();
 
-#define PORT_KEYDAT             0x0060
-#define PORT_KEYSTA             0x0064
-#define PORT_KEYCMD             0x0064
-#define KEYSTA_SEND_NOTREADY    0x02
-#define KEYCMD_WRITE_MODE       0x60
-#define KBC_MODE                0x47
-
-void wait_KBC_sendready(void) {
-	while (1) {
-		if ((in_byte(PORT_KEYSTA) & KEYSTA_SEND_NOTREADY) == 0) {
-			 break;
-		}
-	}
-}
-
-void init_keyboard(void) {
-	wait_KBC_sendready();
-	out_byte(PORT_KEYCMD, KEYCMD_WRITE_MODE);
-	wait_KBC_sendready();
-	out_byte(PORT_KEYDAT, KBC_MODE);
-}
-
-#define KEYCMD_SENDTO_MOUSE		0xd4
-#define MOUSECMD_ENABLE			0xf4
-
-void enable_mouse(void) {
-	wait_KBC_sendready();
-	out_byte(PORT_KEYCMD, KEYCMD_SENDTO_MOUSE);
-	wait_KBC_sendready();
-	out_byte(PORT_KEYDAT, MOUSECMD_ENABLE);
-}
-
+void init_system();
 
 int main(void) {
-    sti();
-    out_byte(0x21, 0b11111001); /* 开放PIC1和键盘中断(11111001) */
-	out_byte(0xa1, 0b11101111); /* 开放鼠标中断(11101111) */
-    
-    init_keyboard();
-    // enable_mouse();
-
-    draw_cursor(120, 100);
+    init_system();
+    draw_cursor(150, 50);
     static char s1[] = "PianOS";
     draw_string(s1, 2, scrn_h - 18, 12);
-
-    int idt = get_idt();
-    set_idt_seg((IDT_Descriptor*)idt + 0x21, (int)asm_response_keyboard, 8, 0x008e);
-    set_idt_seg((IDT_Descriptor*)idt + 0x27, (int)asm_response_int27, 2 * 8, 0x008e);
-    // set_idt_seg((IDT_Descriptor*)idt + 0x2c, (int)asm_response_mouse, 8, 0x008e);
     
     while(1);
     
     return 0;
+}
+
+void init_system() {
+    int idt = get_idt();
+    set_idt_seg((IDT_Descriptor*)idt + 0x21, (int)asm_response_keyboard, 8, 0x008e);
+    set_idt_seg((IDT_Descriptor*)idt + 0x2c, (int)asm_response_mouse, 8, 0x008e);
+
+    sti();
+    out_byte(0x21, 0b11111001); /* 开放PIC1和键盘中断(11111001) */
+	out_byte(0xa1, 0b11101111); /* 开放鼠标中断(11101111) */
+
+    init_keyboard_mouse();
 }
 
 void draw_desktop() {

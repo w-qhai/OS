@@ -1,1 +1,2 @@
 floppya: image="PianOS.img", status=inserted
+mouse: enabled=1

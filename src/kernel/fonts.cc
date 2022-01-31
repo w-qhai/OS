@@ -285,7 +285,7 @@ void draw_number(int number, int base, int x, int y, int color) {
 	int width = 0;
 	int n = number;
 	while(n != 0) {
-        n /= 10;
+        n /= base;
         width++;
     }
 
