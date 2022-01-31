@@ -20,12 +20,12 @@ void response_keyboard() {
 }
 
 void response_mouse() {
-    // out_byte(0xa0, 0x64); /* 通知PIC“IRQ-01已经受理完毕” */
-    // out_byte(0x21, 0x62); /* 通知PIC“IRQ-01已经受理完毕” */
-    // unsigned char data;
-    // data = in_byte(0x0060);
+    out_byte(0xa0, 0x64); /* 通知PIC“IRQ-01已经受理完毕” */
+    out_byte(0x20, 0x62); /* 通知PIC“IRQ-01已经受理完毕” */
+    unsigned char data;
+    data = in_byte(0x0060);
     fill_box(0, 16, 100, 16, 0);
-    draw_string("MOUSE", 0, 16, 15);
+    draw_number(data, 16, 0, 16, 15);
 }
 
 void response_int27() {

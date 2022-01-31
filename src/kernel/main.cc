@@ -8,6 +8,15 @@ void draw_desktop();
 void init_system();
 
 int main(void) {
+    int idt = get_idt();
+    set_idt_seg((IDT_Descriptor*)idt + 0x21, (int)asm_response_keyboard, 8, 0x008e);
+    set_idt_seg((IDT_Descriptor*)idt + 0x2c, (int)asm_response_mouse, 8, 0x008e);
+
+    sti();
+    out_byte(0x21, 0b11111001); /* 开放PIC1和键盘中断(11111001) */
+	out_byte(0xa1, 0b11101111); /* 开放鼠标中断(11101111) */
+
+    init_keyboard_mouse();
     init_system();
     draw_cursor(150, 50);
     static char s1[] = "PianOS";
@@ -19,15 +28,7 @@ int main(void) {
 }
 
 void init_system() {
-    int idt = get_idt();
-    set_idt_seg((IDT_Descriptor*)idt + 0x21, (int)asm_response_keyboard, 8, 0x008e);
-    set_idt_seg((IDT_Descriptor*)idt + 0x2c, (int)asm_response_mouse, 8, 0x008e);
 
-    sti();
-    out_byte(0x21, 0b11111001); /* 开放PIC1和键盘中断(11111001) */
-	out_byte(0xa1, 0b11101111); /* 开放鼠标中断(11101111) */
-
-    init_keyboard_mouse();
 }
 
 void draw_desktop() {
