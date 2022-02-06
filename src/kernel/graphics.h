@@ -23,3 +23,4 @@
 
 void fill_box(int x, int y, int w, int h, int color);
 void draw_cursor(int x, int y);
+void draw_desktop();

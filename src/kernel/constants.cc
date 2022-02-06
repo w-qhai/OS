@@ -6,3 +6,4 @@ const int scrn_h = 200;
 const int g_size = 0xffff;
 Queue mouse_buff = { 0 };
 Queue keyboard_buff = { 0 };
+Mouse mouse = {0, 150, 50};

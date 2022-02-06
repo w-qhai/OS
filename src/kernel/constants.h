@@ -9,6 +9,11 @@ extern const int scrn_h;
 extern const int g_size;
 extern Queue mouse_buff;
 extern Queue keyboard_buff;
+struct Mouse {
+    int button;
+    int x, y;
+};
+extern Mouse mouse;
 
 extern "C" {
     int get_gdt();
