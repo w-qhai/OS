@@ -44,7 +44,7 @@ int in_byte(int port) {
     __asm {
         mov     edx, [ebp + 8]
         mov     eax, 0
-        in      ax, dx
+        in      al, dx
     }
 }
 

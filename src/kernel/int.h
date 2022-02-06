@@ -14,7 +14,4 @@ extern "C" {
 
     extern void asm_response_mouse();
     void response_mouse();
-
-    extern void asm_response_int27();
-    void response_int27();
 }

@@ -251,7 +251,3 @@ asm_response_keyboard:
 asm_response_mouse:
         call    response_mouse
         iret
-
-asm_response_int27:
-        call    response_int27
-        iret

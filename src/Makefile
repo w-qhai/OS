@@ -4,11 +4,16 @@ VM2	=	bochs
 CC	= 	clang
 DEL	= 	rm
 
+OPTS    = -m32 -nostdlib -fasm-blocks -g -c
 BOOTDIR	= ./boot
 KERNEDIR= ./kernel
 BINDIR  = ./bin
 IMAGE   = PianOS.img
 
+OBJS = 	$(BINDIR)/constants.o $(BINDIR)/main.o \
+		$(BINDIR)/fonts.o $(BINDIR)/asmfun.o \
+		$(BINDIR)/graphics.o $(BINDIR)/int.o \
+		$(BINDIR)/queue.o
 
 
 
@@ -26,7 +31,7 @@ $(BINDIR)/%.bin: $(BOOTDIR)/%.asm
 $(BINDIR)/head.bin: $(BOOTDIR)/head.asm  $(KERNEDIR)/kernel.asm
 	$(AS) $(BOOTDIR)/head.asm -o $@ -l $(BINDIR)/kernel.lst
 
-$(KERNEDIR)/kernel.asm: $(BINDIR)/constants.o $(BINDIR)/main.o $(BINDIR)/fonts.o $(BINDIR)/asmfun.o $(BINDIR)/graphics.o $(BINDIR)/int.o
+$(KERNEDIR)/kernel.asm: $(OBJS)
 	ld -m elf_i386 -r -s $^ -o $(BINDIR)/pre_kernel.o
 	@../tools/objconv -np:.: $(BINDIR)/pre_kernel.o $(BINDIR)/kernel.o	>/dev/null
 	@../tools/objconv -fnasm $(BINDIR)/kernel.o	>/dev/null
@@ -36,8 +41,11 @@ $(KERNEDIR)/kernel.asm: $(BINDIR)/constants.o $(BINDIR)/main.o $(BINDIR)/fonts.o
 # 	$(CC) -c -fasm-blocks -m32 $^ -o $@
 
 $(BINDIR)/%.o: $(KERNEDIR)/%.cc
-	$(CC) -m32  -fasm-blocks -g -c $^ -o $@ 
+	$(CC) $(OPTS) $^ -o $@ 
 #	$(CC) -m32 -fno-asynchronous-unwind-tables -fno-pie -fcf-protection=none -mmanual-endbr -c $^ -o $@
+
+# $(BINDIR)/%.o: $(KERNEDIR)/%.hpp
+# 	$(CC) -m32  -fasm-blocks -g -c $^ -o $@ 
 
 run : PianOS.img
 	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE)
