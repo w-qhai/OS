@@ -55,3 +55,16 @@ void out_byte(int port, int data) {
         out     dx, al
     }
 }
+
+void set_cr0(int cr0) {
+    __asm {
+        mov     eax, [ebp + 8]
+        mov     cr0, eax
+    }
+}
+
+int get_cr0() {
+    __asm {
+        mov     eax, cr0
+    }
+}

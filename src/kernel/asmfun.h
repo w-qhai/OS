@@ -16,28 +16,18 @@ struct IDT_Descriptor {
 };
 
 void set_gdt_seg();
-
 void set_idt_seg(IDT_Descriptor* idt, int offset, int selector, int more_flags);
-
-void mem_set(int addr, int bytes, int data);
-
-void load_gdtr(int limit, int addr);
-void load_idtr(int limit, int addr);
 
 void cli();
 void sti();
-void io_set_flags(int flags);
-int io_get_flags();
+void set_flags(int flags);
+int get_flags();
 
 // in  al/ax/eax port
 int in_byte(int port);
-int in_word(int port);
-int in_dword(int port);
 
 // out port data
 void out_byte(int port, int data);
-void out_word(int port, int data);
-void out_dword(int port, int data);
 
-// 测试内联汇编
-void movb(int addr, int data);
+void set_cr0(int cr0);
+int get_cr0();

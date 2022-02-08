@@ -49,7 +49,7 @@ $(BINDIR)/%.o: $(KERNEDIR)/%.cc
 # 	$(CC) -m32  -fasm-blocks -g -c $^ -o $@ 
 
 run : PianOS.img
-	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE)
+	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE) -m 128
 qemu : PianOS.img
 	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE)
 bochs: PianOS.img

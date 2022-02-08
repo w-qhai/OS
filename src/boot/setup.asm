@@ -17,24 +17,28 @@ start:
     mov     [0], dx
 
     ; 读取内存大小
-    mov     ah, 0x88
+    ; mov     ah, 0x88
+    ; int     0x15
+    ; mov     [2], ax
+    mov     ax, 0xe801
     int     0x15
     mov     [2], ax
+    mov     [4], bx
 
     ; 读取显卡数据
     mov     ah, 0x0f
     int     0x10
-    mov     [4], bx ; bh = display page
-    mov     [6], ax ; al = video mode, ah = window width
+    mov     [6], bx ; bh = display page
+    mov     [8], ax ; al = video mode, ah = window width
 
     ; 检查ega, vga 和一些配置数据
     mov     ah, 0x12
     mov     bl, 0x10
     int     0x10
 
-    mov     [8], ax
-    mov     [10], bx
-    mov     [12], cx
+    mov     [10], ax
+    mov     [12], bx
+    mov     [14], cx
 
     ; 硬盘数据 hd0
     ; mov     ax, 0x0000

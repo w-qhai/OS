@@ -10,14 +10,15 @@
 void init_system();
 
 int main(void) {
-    cli();
     init_system();
-    draw_desktop();
+    // draw_desktop();
     draw_cursor(mouse.x, mouse.y);
     static char s1[] = "PianOS";
     draw_string(s1, 2, scrn_h - 18, 12);
-    
-    sti();
+
+
+    draw_number(mem_size, 10, 10, 0, 0, 9);
+
     while(1) {
         cli();
         if (!keyboard_buff.empty()) {
@@ -62,4 +63,10 @@ void init_system() {
     init_keyboard();
     enable_mouse();
     is_mouse_init = false;
+
+    uint32_t ax = *(uint32_t*)(0x90002);
+    uint32_t bx = *(uint32_t*)(0x90004);
+
+    mem_size = (ax + bx) / 1024 / 1024 + 1; // 计算内存大小
+
 }

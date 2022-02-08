@@ -7,6 +7,8 @@ extern char* const vram;
 extern const int scrn_w;
 extern const int scrn_h;
 extern const int g_size;
+extern uint32_t mem_size;
+
 extern Queue mouse_buff;
 extern Queue keyboard_buff;
 struct Mouse {
