@@ -6,18 +6,17 @@
 #include "mouse.h"
 #include "keyboard.h"
 
-
 void init_system();
-
-int main(void) {
-    init_system();
-    // draw_desktop();
+void init_screen() {
     draw_cursor(mouse.x, mouse.y);
     static char s1[] = "PianOS";
     draw_string(s1, 2, scrn_h - 18, 12);
+    draw_number(mem_size, 10, 10, 0, 0, 9); // 打印内存大小
+}
 
-
-    draw_number(mem_size, 10, 10, 0, 0, 9);
+int main(void) {
+    init_system();
+    init_screen();
 
     while(1) {
         cli();
