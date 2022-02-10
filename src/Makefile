@@ -14,7 +14,8 @@ OBJS = 	$(BINDIR)/constants.o $(BINDIR)/main.o \
 		$(BINDIR)/fonts.o $(BINDIR)/asmfun.o \
 		$(BINDIR)/graphics.o $(BINDIR)/int.o \
 		$(BINDIR)/queue.o \
-		$(BINDIR)/mouse.o $(BINDIR)/keyboard.o
+		$(BINDIR)/mouse.o $(BINDIR)/keyboard.o \
+		$(BINDIR)/memory.o
 
 
 

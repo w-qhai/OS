@@ -5,19 +5,26 @@
 #include "queue.h"
 #include "mouse.h"
 #include "keyboard.h"
+#include "memory.h"
+
+MemoryManage mem_manage;
 
 void init_system();
 void init_screen() {
     draw_cursor(mouse.x, mouse.y);
     static char s1[] = "PianOS";
     draw_string(s1, 2, scrn_h - 18, 12);
-    draw_number(mem_size, 10, 10, 0, 0, 9); // 打印内存大小
+    draw_number(mem_size / 1024, 10, 10, 0, 0, 9); // 打印内存大小
+    draw_number(final(), 10, 0, 0,  16, 9); // 系统大小
+    int unused = (mem_size - final()) / 1024; 
+    draw_number(unused, 10, 10, 0, 48, 9);  // 应该空闲大小
+    draw_number(mem_manage.total() / 1024, 10, 10, 0, 64, 9);   // 实际空闲大小
 }
 
 int main(void) {
     init_system();
     init_screen();
-
+    
     while(1) {
         cli();
         if (!keyboard_buff.empty()) {
@@ -66,6 +73,8 @@ void init_system() {
     uint32_t ax = *(uint32_t*)(0x90002);
     uint32_t bx = *(uint32_t*)(0x90004);
 
-    mem_size = (ax + bx) / 1024 / 1024 + 1; // 计算内存大小
-
+    mem_size = (ax + bx); // 计算内存大小
+    mem_manage.init();
+    mem_manage.free((void*)0, mem_size);
+    mem_manage.alloc(final());
 }

@@ -20,6 +20,7 @@ extern Mouse mouse;
 extern "C" {
     int get_gdt();
     int get_idt();
+    int final();
 }
 
 template<class T>

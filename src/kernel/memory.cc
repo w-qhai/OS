@@ -34,16 +34,52 @@ void* MemoryManage::alloc(uint32_t size) {
     return nullptr;
 }
 
-// int MemoryManage::free(void* addr, uint32_t size) {
-//     uint32_t i;
-//     for (i = 0; i < this->capacity; i++) {
-//         if (this->blocks[i].addr > (uint32_t)addr) {
-//             break;
-//         }
-//     }
+int MemoryManage::free(void* addr, uint32_t size) {
+    uint32_t i, iaddr = (uint32_t)addr;
+    for (i = 0; i < this->capacity; i++) {
+        if (this->blocks[i].addr > (uint32_t)addr) {
+            break;
+        }
+    }
 
-//     if (i > 0) {
-//         if ()
-//     }
+    if (i > 0) {
+        if (blocks[i-1].addr + blocks[i-1].size == iaddr) {
+            blocks[i-1].size += size;
+            if (i < this->unused) {
+                if (iaddr + size == blocks[i].addr) {
+                    blocks[i-1].size += blocks[i].size;
+                    unused--;
+                }
+                for (; i < this->unused; i++) {
+                    blocks[i] = blocks[i+1];
+                }
+            }
+        }
+        return 0;
+    }
 
-// }
+    if (i < this->unused) {
+        if (iaddr + size == blocks[i].addr) {
+            blocks[i].addr += iaddr;
+            blocks[i].size += size;
+            return 0;
+        }
+    }
+
+    // 需要新建
+    if (1) {
+        for (uint32_t j = this->unused; j > i; j--) {
+            blocks[j] = blocks[j-1];
+        }
+        unused++;
+        if (capacity < unused) {
+            capacity = unused;
+        }
+        blocks[i] = {iaddr, size};
+        return 0;
+    }
+
+    faild_count++;
+    faild_total_size += size;
+    return -1;
+}
