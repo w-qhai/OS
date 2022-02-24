@@ -1,6 +1,6 @@
 #include "graphics.h"
 
-void fill_box(int x, int y, int w, int h, int color) {
+void fill_box(int x, int y, int w, int h, int color, uint8_t* vram) {
     for (int i = x; i < x + w; i++) {
         for (int j = y; j < y + h; j++) {
             vram[j * scrn_w + i] = color;
@@ -8,7 +8,7 @@ void fill_box(int x, int y, int w, int h, int color) {
     }
 }
 
-void draw_cursor(int x, int y) {
+void draw_cursor(int x, int y, uint8_t* vram) {
     static uint8_t curosr[8] = {
         0b11111110,
         0b11111000,
@@ -29,7 +29,7 @@ void draw_cursor(int x, int y) {
     }
 }
 
-void draw_desktop() {
+void draw_desktop(uint8_t* vram) {
     fill_box(0, 0, scrn_w, scrn_h, 0x0f);
     int white_count = 7;
     int white_width = scrn_w / white_count;

@@ -11,6 +11,7 @@ ENDSEG      equ     SYSSEG + SYSSIZE		; 0x4000
 ;创建程序tools/build会使用你指定的值来设置你的根文件系统所在设备号。
 ROOT_DEV    equ     0x306
 
+
 start:
     mov     ax, BOOTSEG
     mov     ds, ax

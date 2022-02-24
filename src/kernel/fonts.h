@@ -5,6 +5,5 @@
 #include "constants.h"
 
 extern uint8_t fonts[256][16];
-void draw_char(char c, int x, int y, int color);
-void draw_string(const char* str, int x, int y, int color);
-void draw_number(int num, int base, int width, int x, int y, int color);
+void draw_char(char c, int x, int y, int color, uint8_t* vram = ::vram);
+void draw_string(const char* str, int x, int y, int color, uint8_t* vram = ::vram);

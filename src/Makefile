@@ -39,25 +39,19 @@ $(KERNEDIR)/kernel.asm: $(OBJS)
 	@../tools/objconv -fnasm $(BINDIR)/kernel.o	>/dev/null
 	@sed -i -e 's/[a-z]*execute//g' -e 's/: *function//g' $(BINDIR)/kernel.asm
 
-# $(BINDIR)/asmfun.o: $(KERNEDIR)/asmfun.cc
-# 	$(CC) -c -fasm-blocks -m32 $^ -o $@
-
 $(BINDIR)/%.o: $(KERNEDIR)/%.cc
 	$(CC) $(OPTS) $^ -o $@ 
 #	$(CC) -m32 -fno-asynchronous-unwind-tables -fno-pie -fcf-protection=none -mmanual-endbr -c $^ -o $@
 
-# $(BINDIR)/%.o: $(KERNEDIR)/%.hpp
-# 	$(CC) -m32  -fasm-blocks -g -c $^ -o $@ 
-
-run : PianOS.img
+run : $(IMAGE)
 	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE) -m 128
-qemu : PianOS.img
+qemu : $(IMAGE)
 	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE)
-bochs: PianOS.img
+bochs: $(IMAGE)
 	$(VM2)	-f bochsrc.txt
 
 clean:
-	-$(DEL)	PianOS.img
+	-$(DEL)	$(IMAGE)
 	-$(DEL) $(BINDIR)/*
 
 #gcc -s -c a.c -m32 -fno-asynchronous-unwind-tables -fno-pie -fcf-protection=none -mmanual-endbr; ./objconv a.o -fnasm

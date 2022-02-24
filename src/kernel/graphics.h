@@ -21,6 +21,6 @@
  * f 白色
  */
 
-void fill_box(int x, int y, int w, int h, int color);
-void draw_cursor(int x, int y);
-void draw_desktop();
+void fill_box(int x, int y, int w, int h, int color, uint8_t* vram = ::vram);
+void draw_cursor(int x, int y, uint8_t* vram = ::vram);
+void draw_desktop(uint8_t* vram = ::vram);

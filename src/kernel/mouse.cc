@@ -18,8 +18,7 @@ void mouse_decode(const int8_t data[]) {
     else if (mouse.button & 0x04) {
 
     }
-    //------------ 绘制鼠标
-    fill_box(mouse.x, mouse.y, 8, 8, 0);
+
     mouse.x += data[1];
     mouse.y -= data[2];
 
@@ -28,6 +27,4 @@ void mouse_decode(const int8_t data[]) {
 
     mouse.x = min(mouse.x, scrn_w - 8);
     mouse.y = min(mouse.y, scrn_h - 8);
-
-    draw_cursor(mouse.x, mouse.y);
 }

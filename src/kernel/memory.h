@@ -1,21 +1,30 @@
 #pragma once
 #include "constants.h"
 
+#define MemBlockCnt 1000
+
 struct MemoryBlock {
     uint32_t addr;
     uint32_t size;
 };
 
-struct MemoryManage {
-    uint32_t unused;
-    uint32_t capacity;
-    uint32_t faild_total_size;
-    uint32_t faild_count;
-    MemoryBlock blocks[1000];
+class MemoryManage {
 
-    void init();
-    uint32_t total();
-    void* alloc(uint32_t size);
-    int free(void* addr, uint32_t size);
+public:
+    static uint32_t size;
+
+private:
+    static uint32_t unused;
+    static uint32_t capacity;
+    static uint32_t faild_total_size;
+    static uint32_t faild_count;
+    static MemoryBlock blocks[MemBlockCnt];
+
+public:
+    MemoryManage();
+    static void init();
+    static uint32_t total();
+    static void* alloc(uint32_t size);
+    static int free(void* addr, uint32_t size);
 };
 

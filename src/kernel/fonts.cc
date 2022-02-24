@@ -258,7 +258,7 @@ uint8_t fonts[256][16] = {
 	{0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0}
 };
 
-void draw_char(char c, int x, int y, int color) {
+void draw_char(char c, int x, int y, int color, uint8_t* vram) {
     // 字体 16 * 8
     for (int i = 0; i < 16; i++) {
         for (int j = 0; j < 8; j++) {
@@ -269,41 +269,8 @@ void draw_char(char c, int x, int y, int color) {
     }
 }
 
-void draw_string(const char* str, int x, int y, int color) {
+void draw_string(const char* str, int x, int y, int color, uint8_t* vram) {
     for (int i = 0; str[i]; i++) {
-        draw_char(str[i], x + i * 8, y, color);
+        draw_char(str[i], x + i * 8, y, color, vram);
     }
 }
-
-void draw_number(int number, int base, int width, int x, int y, int color) {
-	static char s[17] = "0123456789ABCDEF";
-	static char nums[32];
-
-	if (number == 0) {
-		draw_char('0', x, y, color);
-		return;
-	}
-	for (int i = 0; i < 32; i++) {
-		nums[i] = 0;
-	}
-
-	int len = 0;
-	int n = number > 0 ? number : -number;
-	while (n) {
-		n /= base;
-		len++;
-	}
-	if (number < 0) {
-		nums[0] = '-';
-		number = -number;
-		len++;
-	}
-
-	while (number) {
-		nums[--len] = s[number % base];
-		number /= base;
-	}
-	
-	draw_string(nums, x, y, color);
-}
-
