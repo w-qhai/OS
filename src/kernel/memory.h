@@ -8,7 +8,7 @@ struct MemoryBlock {
     uint32_t size;
 };
 
-class MemoryManage {
+class MemoryManager {
 
 public:
     static uint32_t size;
@@ -21,7 +21,7 @@ private:
     static MemoryBlock blocks[MemBlockCnt];
 
 public:
-    MemoryManage();
+    MemoryManager();
     static void init();
     static uint32_t total();
     static void* alloc(uint32_t size);

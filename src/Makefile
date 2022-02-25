@@ -4,7 +4,7 @@ VM2	=	bochs
 CC	= 	clang
 DEL	= 	rm
 
-OPTS    = -m32 -nostdlib -fasm-blocks -g -c
+OPTS    = -m32 -fasm-blocks -g -c -W
 BOOTDIR	= ./boot
 KERNEDIR= ./kernel
 BINDIR  = ./bin
@@ -15,42 +15,37 @@ OBJS = 	$(BINDIR)/constants.o $(BINDIR)/main.o \
 		$(BINDIR)/graphics.o $(BINDIR)/int.o \
 		$(BINDIR)/queue.o \
 		$(BINDIR)/mouse.o $(BINDIR)/keyboard.o \
-		$(BINDIR)/memory.o
+		$(BINDIR)/memory.o 		$(BINDIR)/layer.o \
 
-
-
-$(IMAGE): $(BINDIR)/bootsect.bin $(BINDIR)/setup.bin $(BINDIR)/head.bin	
+$(IMAGE): Makefile $(BINDIR)/bootsect.bin $(BINDIR)/setup.bin $(BINDIR)/head.bin $(OBJS)
 # 1.44MB 可在bochs中使用，以便调试
+	ld $(BINDIR)/head.bin $(OBJS) -e start -melf_i386 -Ttext 0x0 -o $(BINDIR)/PianOS.sys
+	@cp $(BINDIR)/PianOS.sys $(BINDIR)/PianOS.syss
+	@objcopy -O binary $(BINDIR)/PianOS.sys
 	@dd if=/dev/zero    			of=PianOS.img   bs=1474560	count=1 	2>>/dev/null
 	@dd if=$(BINDIR)/bootsect.bin	of=PianOS.img   bs=512 		count=1 conv=notrunc 2>>/dev/null
-	@dd	if=$(BINDIR)/setup.bin		of=PianOS.img	bs=512 		count=4 seek=1 conv=notrunc 2>>/dev/null
-	@dd	if=$(BINDIR)/head.bin		of=PianOS.img	bs=512 		seek=5 	conv=notrunc 2>>/dev/null
+	@dd if=$(BINDIR)/setup.bin		of=PianOS.img	bs=512 		count=4 seek=1 conv=notrunc 2>>/dev/null
+	@dd if=$(BINDIR)/PianOS.sys		of=PianOS.img	bs=512 		seek=5 	conv=notrunc 2>>/dev/null
 	-@echo "\e[01;32m[Bulid Successfully]\e[00m"
 
 $(BINDIR)/%.bin: $(BOOTDIR)/%.asm
 	$(AS) $^ -o $@ 
 
-$(BINDIR)/head.bin: $(BOOTDIR)/head.asm  $(KERNEDIR)/kernel.asm
-	$(AS) $(BOOTDIR)/head.asm -o $@ -l $(BINDIR)/kernel.lst
-
-$(KERNEDIR)/kernel.asm: $(OBJS)
-	ld -m elf_i386 -r -s $^ -o $(BINDIR)/pre_kernel.o
-	@../tools/objconv -np:.: $(BINDIR)/pre_kernel.o $(BINDIR)/kernel.o	>/dev/null
-	@../tools/objconv -fnasm $(BINDIR)/kernel.o	>/dev/null
-	@sed -i -e 's/[a-z]*execute//g' -e 's/: *function//g' $(BINDIR)/kernel.asm
+$(BINDIR)/head.bin: $(BOOTDIR)/head.asm
+	$(AS) -felf32 $(BOOTDIR)/head.asm -o $(BINDIR)/head.bin
 
 $(BINDIR)/%.o: $(KERNEDIR)/%.cc
 	$(CC) $(OPTS) $^ -o $@ 
 #	$(CC) -m32 -fno-asynchronous-unwind-tables -fno-pie -fcf-protection=none -mmanual-endbr -c $^ -o $@
 
-run : $(IMAGE)
+run : Makefile $(IMAGE)
 	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE) -m 128
-qemu : $(IMAGE)
+qemu : Makefile $(IMAGE)
 	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE)
-bochs: $(IMAGE)
+bochs: Makefile $(IMAGE)
 	$(VM2)	-f bochsrc.txt
 
-clean:
+clean: Makefile
 	-$(DEL)	$(IMAGE)
 	-$(DEL) $(BINDIR)/*
 

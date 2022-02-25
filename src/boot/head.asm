@@ -1,12 +1,22 @@
+global start
+
 _pg_dir     equ     0x0000  ;   页目录地址
 pg0         equ     0x1000
 pg1         equ     0x2000
 pg2         equ     0x3000
 pg3         equ     0x4000
 
+extern main
+extern response_keyboard
+extern response_mouse
+
+global get_idt
+global asm_response_keyboard
+global asm_response_mouse
+global final
+
 _tmp_floppy_area    equ     0x5000;     软盘缓冲区地址
 len_floppy_area     equ     0x400;      缓冲区大小1KB
-
 [bits 32]
     jmp     start
     times _tmp_floppy_area+len_floppy_area-($-$$) db 0  ;
@@ -236,9 +246,6 @@ print_str:                       ;保护模式下显示字符串, 以'$'为结�
         jmp  print_str
 print_over:
         ret
-
-
-%include	"bin/kernel.asm"
 
 get_idt:
         mov     eax, _idt

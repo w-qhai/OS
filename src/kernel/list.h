@@ -1,3 +1,5 @@
+#pragma once
+
 #include "constants.h"
 
 template<typename T>
@@ -12,17 +14,32 @@ private:
 
     Node* head;
     Node* tail;
+    uint32_t length;
 
 public:
     List(/* args */);
     ~List();
+    void insert(const T& data, int pos);
+    void remove(int pos);
 };
 
-List::List(/* args */) {
+template<typename T>
+List<T>::List(/* args */) {
     head = nullptr;
-
+    tail = nullptr;
 }
 
-List::~List() {
+template<typename T>
+void List<T>::insert(const T& data, int pos) {
+
+    Node* p = this->head;
+    while (pos--) {
+        p = p->next;
+    }
+    
+}
+
+template<typename T>
+List<T>::~List() {
 
 }

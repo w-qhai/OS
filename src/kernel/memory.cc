@@ -1,23 +1,23 @@
 #include "memory.h"
 
-uint32_t MemoryManage::unused = 0;
-uint32_t MemoryManage::capacity = 0;
-uint32_t MemoryManage::faild_count = 0;
-uint32_t MemoryManage::faild_total_size = 0;
-MemoryBlock MemoryManage::blocks[MemBlockCnt];
-uint32_t MemoryManage::size = 0;
+uint32_t MemoryManager::unused = 0;
+uint32_t MemoryManager::capacity = 0;
+uint32_t MemoryManager::faild_count = 0;
+uint32_t MemoryManager::faild_total_size = 0;
+MemoryBlock MemoryManager::blocks[MemBlockCnt];
+uint32_t MemoryManager::size = 0;
 
-MemoryManage::MemoryManage() {
+MemoryManager::MemoryManager() {
 
 }
 
-void MemoryManage::init() {
+void MemoryManager::init() {
     uint32_t ax = *(uint32_t*)(0x90002);
     uint32_t bx = *(uint32_t*)(0x90004);
-    MemoryManage:size = (ax + bx); // 计算内存大小
+    MemoryManager:size = (ax + bx); // 计算内存大小
 }
 
-uint32_t MemoryManage::total() {
+uint32_t MemoryManager::total() {
     uint32_t sum = 0;
     for (uint32_t i = 0; i < unused; i++) {
         sum += blocks[i].size;
@@ -25,7 +25,7 @@ uint32_t MemoryManage::total() {
     return sum;
 }
 
-void* MemoryManage::alloc(uint32_t size) {
+void* MemoryManager::alloc(uint32_t size) {
     for (uint32_t i = 0; i < unused; i++) {
         if (blocks[i].size >= size) {
             uint32_t addr = blocks[i].addr;
@@ -44,7 +44,7 @@ void* MemoryManage::alloc(uint32_t size) {
     return nullptr;
 }
 
-int MemoryManage::free(void* addr, uint32_t size) {
+int MemoryManager::free(void* addr, uint32_t size) {
     uint32_t i, iaddr = (uint32_t)addr;
     for (i = 0; i < capacity; i++) {
         if (blocks[i].addr > (uint32_t)addr) {
