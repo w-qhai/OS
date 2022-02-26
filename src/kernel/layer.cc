@@ -1,14 +1,15 @@
 #include "layer.h"
 
 void Layer::set_buff(uint8_t* buff, int width, int height, int alpha) {
-    MemoryManager::free(buff, width * height);
-    this->buff = (uint8_t*)MemoryManager::alloc(width * height);
+    // MemoryManager::free(buff, width * height);
+    // this->buff = (uint8_t*)MemoryManager::alloc(width * height);
+    this->buff = buff;
     this->width = width;
     this->height = height;
     this->alpha = alpha;
 }
 
-int32_t LayerManager::top = -1;
+int32_t LayerManager::top = 0;
 Layer* LayerManager::sheets[Max_Layer];
 Layer LayerManager::sheets0[Max_Layer];
 
@@ -29,60 +30,65 @@ Layer* LayerManager::alloc() {
 }
 
 void LayerManager::updown(Layer* layer, int z_index) {
-    int old_z_index = layer->z_index;
-    z_index = min(z_index, top + 1);
-    z_index = max(z_index, -1);
-
     layer->z_index = z_index;
+    sheets[z_index] = layer;
+    
+    // int old_z_index = layer->z_index;
+    // z_index = min(z_index, top + 1);
+    // z_index = max(z_index, -1);
 
-    if (old_z_index > z_index) { // 比以前低
-        if (z_index >= 0) {
-            for (int i = old_z_index; i > z_index; i--) {
-                sheets[i] = sheets[i-1];
-                sheets[i]->z_index = i;
-            }
-            sheets[z_index] = layer;
-        }
-        else {
-            if (top > old_z_index) {
-                for (int i = old_z_index; i < top; i++) {
-                    sheets[i] = sheets[i+1];
-                    sheets[i]->z_index = i;
-                }
-            }
-            top--;
-        }
-    }        
-    else if (old_z_index < z_index) { // 比以前低
-        if (old_z_index >= 0) {
-            for (int i = old_z_index; i < z_index; i++) {
-                sheets[i] = sheets[i+1];
-                sheets[i]->z_index = i;
-            }
-            sheets[z_index] = layer;
-        }
-        else {
-            for (int i = top; i >= z_index; i--) {
-                sheets[i+1] = sheets[i];
-                sheets[i+1]->z_index = i + 1;
-            }
-            sheets[z_index] = layer;
-            top++;
-        }
-    }
+    // layer->z_index = z_index;
+
+    // if (old_z_index > z_index) { // 比以前低
+    //     if (z_index >= 0) {
+    //         for (int i = old_z_index; i > z_index; i--) {
+    //             sheets[i] = sheets[i-1];
+    //             sheets[i]->z_index = i;
+    //         }
+    //         sheets[z_index] = layer;
+    //     }
+    //     else {
+    //         if (top > old_z_index) {
+    //             for (int i = old_z_index; i < top; i++) {
+    //                 sheets[i] = sheets[i+1];
+    //                 sheets[i]->z_index = i;
+    //             }
+    //         }
+    //         top--;
+    //     }
+    // }        
+    // else if (old_z_index < z_index) { // 比以前低
+    //     if (old_z_index >= 0) {
+    //         for (int i = old_z_index; i < z_index; i++) {
+    //             sheets[i] = sheets[i+1];
+    //             sheets[i]->z_index = i;
+    //         }
+    //         sheets[z_index] = layer;
+    //     }
+    //     else {
+    //         for (int i = top; i >= z_index; i--) {
+    //             sheets[i+1] = sheets[i];
+    //             sheets[i+1]->z_index = i + 1;
+    //         }
+    //         sheets[z_index] = layer;
+    //         top++;
+    //     }
+    // }
     refresh();
 }
 
 void LayerManager::refresh() {
-    for (int i = 0; i < top; i++) {
-        Layer* layer = sheets[i];
+    for (int z = 0; z < Max_Layer; z++) {
+        Layer* layer = sheets[z];
+        if (layer->flags == 0) {
+            continue;
+        }
+        // 绘制当前层
         for (int y = 0; y < layer->height; y++) {
-            int ry = y + layer->y;
+            int ry = layer->y + y;
             for (int x = 0; x < layer->width; x++) {
-                int rx = x + layer->x;
-                if (layer->buff[y * layer->width + x] != layer->alpha) {
-                    ::vram[ry * layer->width + rx] = layer->buff[y * layer->width + x];
-                }
+                int rx = layer->x + x;
+                ::vram[ry * scrn_w + rx] = layer->buff[y * layer->width +x];
             }
         }
     }

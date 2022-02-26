@@ -258,19 +258,23 @@ uint8_t fonts[256][16] = {
 	{0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0}
 };
 
-void draw_char(char c, int x, int y, int color, uint8_t* vram) {
+void draw_char(char c, int x, int y, int color, Layer* layer) {
     // 字体 16 * 8
     for (int i = 0; i < 16; i++) {
         for (int j = 0; j < 8; j++) {
             if (fonts[c][i] & (0x80 >> j)) {
-                vram[(y + i)* scrn_w + x + j] = color;
+				layer->buff[(i + y) * layer->width + (j + x)] = color;
             }
+			else {
+				layer->buff[(i + y) * layer->width + (j + x)] = 0;
+			}
         }
     }
 }
 
-void draw_string(const char* str, int x, int y, int color, uint8_t* vram) {
+void draw_string(const char* str, int x, int y, int color, Layer* layer) {
     for (int i = 0; str[i]; i++) {
-        draw_char(str[i], x + i * 8, y, color, vram);
+        draw_char(str[i], x + i * 8, y, color, layer);
     }
+	LayerManager::refresh();
 }

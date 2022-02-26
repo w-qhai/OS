@@ -1,5 +1,6 @@
 #pragma once
 #include "constants.h"
+#include "layer.h"
 
 /**
  * @brief 颜色代码
@@ -21,6 +22,6 @@
  * f 白色
  */
 
-void fill_box(int x, int y, int w, int h, int color, uint8_t* vram = ::vram);
-void draw_cursor(int x, int y, uint8_t* vram = ::vram);
-void draw_desktop(uint8_t* vram = ::vram);
+void fill_box(int x, int y, int w, int h, int color, Layer* layer);
+void draw_cursor(int x, int y, Layer* layer);
+void draw_desktop(Layer* layer);

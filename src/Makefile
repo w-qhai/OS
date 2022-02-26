@@ -26,7 +26,7 @@ $(IMAGE): Makefile $(BINDIR)/bootsect.bin $(BINDIR)/setup.bin $(BINDIR)/head.bin
 	@dd if=$(BINDIR)/bootsect.bin	of=PianOS.img   bs=512 		count=1 conv=notrunc 2>>/dev/null
 	@dd if=$(BINDIR)/setup.bin		of=PianOS.img	bs=512 		count=4 seek=1 conv=notrunc 2>>/dev/null
 	@dd if=$(BINDIR)/PianOS.sys		of=PianOS.img	bs=512 		seek=5 	conv=notrunc 2>>/dev/null
-	-@echo "\e[01;32m[Bulid Successfully]\e[00m"
+	-@echo "\e[01;32m[Build Successfully]\e[00m"
 
 $(BINDIR)/%.bin: $(BOOTDIR)/%.asm
 	$(AS) $^ -o $@ 

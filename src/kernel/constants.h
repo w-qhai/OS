@@ -6,7 +6,6 @@
 extern uint8_t* const vram;
 extern const int scrn_w;
 extern const int scrn_h;
-extern const int g_size;
 
 extern Queue mouse_buff;
 extern Queue keyboard_buff;
@@ -29,8 +28,6 @@ void swap(T& t1, T& t2) {
     t2 = t;
 }
 
-// #define max(a, b) (((a)-(b)<=0)?(b):(a))
-// #define min(a, b) (((a)-(b)<=0)?(a):(b))
 template<class T>
 T max(const T& t1, const T& t2) {
     return t1 > t2 ? t1 : t2;

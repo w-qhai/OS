@@ -16,7 +16,7 @@ struct Layer {
 };
 
 class LayerManager {
-private:
+public:
     static int32_t top;
     static Layer* sheets[Max_Layer];
     static Layer sheets0[Max_Layer];
