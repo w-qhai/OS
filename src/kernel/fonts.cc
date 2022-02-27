@@ -276,5 +276,5 @@ void draw_string(const char* str, int x, int y, int color, Layer* layer) {
     for (int i = 0; str[i]; i++) {
         draw_char(str[i], x + i * 8, y, color, layer);
     }
-	LayerManager::refresh();
+	LayerManager::refresh(layer->x + x, layer->y + y, strlen(str) * 8, 16);
 }

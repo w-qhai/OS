@@ -25,6 +25,6 @@ void mouse_decode(const int8_t data[]) {
     mouse.x = max(mouse.x, 0);
     mouse.y = max(mouse.y, 0);
 
-    mouse.x = min(mouse.x, scrn_w - 8);
-    mouse.y = min(mouse.y, scrn_h - 8);
+    mouse.x = min(mouse.x, scrn_w - 1);
+    mouse.y = min(mouse.y, scrn_h - 1);
 }

@@ -23,11 +23,11 @@ void draw_cursor(int x, int y, Layer* layer) {
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
             if (curosr[i] & (0x80 >> j)) {
-                layer->buff[(y + i)* layer->width + (x + j)] = 10;
+                layer->buff[(y + i)* layer->width + (x + j)] = 15;
             }
         }
     }
-    LayerManager::refresh();
+    LayerManager::refresh(layer->x + x, layer->y + y, 8, 8);
 }
 
 void draw_desktop(Layer* layer) {

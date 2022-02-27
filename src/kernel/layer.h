@@ -25,7 +25,8 @@ public:
     LayerManager();
     static Layer* alloc();
     static void updown(Layer* layer, int z_index);
-    static void refresh();
+    // static void refresh();
+    static void refresh(int x, int y, int w, int h);
     static void slide(Layer* layer, int x, int y); 
     static void free(Layer* layer);
 };

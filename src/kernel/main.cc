@@ -52,6 +52,7 @@ int main(void) {
                 mouse_buff.pop();
                 sti();
                 if (read_status == mouse_date_size) { // 读完2字节
+                    Mouse tm = mouse;
                     mouse_decode(data);
                     LayerManager::slide(layer_mouse, mouse.x, mouse.y);  
                     sprintf(mouse_info, "(%d, %d)", mouse.x, mouse.y);

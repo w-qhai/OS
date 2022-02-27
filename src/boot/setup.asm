@@ -4,6 +4,8 @@
 start:
 ; 改为图形模式 vga
     mov     ax, 0x0013
+    ; mov     ax, 0x4f02
+    ; mov     bx, 0x4101
     int     0x10
 
     mov     ax, INITSEG ; 把数据存在原来bootsect的位置
