@@ -16,7 +16,7 @@ Layer LayerManager::sheets0[Max_Layer];
 LayerManager::LayerManager() {
 }
 
-Layer* LayerManager::alloc() {
+Layer* LayerManager::alloc(uint8_t* buff, int width, int height, int alpha) {
     Layer* layer = nullptr;
     for (int i = 0; i < Max_Layer; i++) {
         if (sheets0[i].flags == 0) {
@@ -26,6 +26,7 @@ Layer* LayerManager::alloc() {
             break;
         }
     }
+    layer->set_buff(buff, width, height, alpha);
     return layer;
 }
 
@@ -100,9 +101,6 @@ void LayerManager::refresh(int x, int y, int w, int h) {
     y = max(y, 0);
     w = min(scrn_w - x, w);
     h = min(scrn_h - y, h);
-    // if (x + w > scrn_w) {
-    //     w = scrn_w - x;
-    // }
 
     for (int z = 0; z < Max_Layer; z++) {
         Layer* layer = sheets[z];
@@ -125,8 +123,10 @@ void LayerManager::refresh(int x, int y, int w, int h) {
             int ry = i + layer->y;
             for (int j = bx0; j < bx1; j++) {
                 int rx = j + layer->x;
-                ::vram[ry*scrn_w + rx] =
-                    layer->buff[i*layer->width + j];
+                if (layer->buff[i*layer->width + j] != layer->alpha) {
+                    ::vram[ry*scrn_w + rx] =
+                        layer->buff[i*layer->width + j];
+                }
             }
         }
     }

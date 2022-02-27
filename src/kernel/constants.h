@@ -3,6 +3,10 @@
 #include <cstdint>
 #include "queue.h"
 
+#define win_w 320
+#define win_h 200
+#define curosr_size 16
+
 extern uint8_t* const vram;
 extern const int scrn_w;
 extern const int scrn_h;

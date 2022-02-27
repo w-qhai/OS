@@ -266,7 +266,7 @@ void draw_char(char c, int x, int y, int color, Layer* layer) {
 				layer->buff[(i + y) * layer->width + (j + x)] = color;
             }
 			else {
-				layer->buff[(i + y) * layer->width + (j + x)] = 0;
+				layer->buff[(i + y) * layer->width + (j + x)] = -1;
 			}
         }
     }

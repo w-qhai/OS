@@ -8,27 +8,31 @@
 #include "memory.h"
 #include "layer.h"
 
-void init_system();
-
 static char mouse_info[20];
-uint8_t buff_back[320 * 200] = { 0 };
-uint8_t buff_mouse[8 * 8] = { 0 };
-int main(void) {
-    init_system();
-    Layer* layer_back = LayerManager::alloc();
-    layer_back->set_buff(buff_back, ::scrn_w, ::scrn_h, -1);         // 设置图层缓冲区
+uint8_t buff_back[win_w * win_h] = { 0 };
+uint8_t buff_mouse[curosr_size * curosr_size] = { 0 };
+
+Layer* layer_back;
+Layer* layer_mouse;
+
+void init_system();
+void init_layer() {
+//==============桌面层==============
+    layer_back = LayerManager::alloc(buff_back, ::scrn_w, ::scrn_h, -1);  // 设置图层缓冲区
     LayerManager::slide(layer_back, 0, 0);                      // 图层在（0，0）位置
     LayerManager::updown(layer_back, 0);
-
-    draw_string("PianOS", 0, ::scrn_h - 16, 10, layer_back);
-    sprintf(mouse_info, "(%d, %d)", mouse.x, mouse.y);
-    draw_string(mouse_info, 0, 0, 10, layer_back);
-
-    Layer* layer_mouse = LayerManager::alloc();
-    layer_mouse->set_buff(buff_mouse, 8, 8, -1);
-    LayerManager::slide(layer_mouse, 100, 100);                      // 图层在（0，0）位置
+    draw_desktop(layer_back);
+    
+//==============鼠标层==============
+    layer_mouse = LayerManager::alloc(buff_mouse, curosr_size, curosr_size, 99);
+    LayerManager::slide(layer_mouse, mouse.x, mouse.y);
     LayerManager::updown(layer_mouse, 1);
     draw_cursor(0, 0, layer_mouse);
+
+}
+int main(void) {
+    init_system();
+    init_layer();
 
     while(true) {
         cli();

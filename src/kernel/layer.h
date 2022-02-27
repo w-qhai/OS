@@ -23,7 +23,7 @@ public:
 
 public:
     LayerManager();
-    static Layer* alloc();
+    static Layer* alloc(uint8_t* buff, int width, int height, int alpha);
     static void updown(Layer* layer, int z_index);
     // static void refresh();
     static void refresh(int x, int y, int w, int h);
