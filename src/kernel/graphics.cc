@@ -1,8 +1,10 @@
 #include "graphics.h"
 
 void fill_box(int x, int y, int w, int h, int color, Layer* layer) {
-    for (int i = y; i < y + h; i++) {
-        for (int j = x; j < x + w; j++) {
+    w = min(w+x, layer->width);
+    h = min(h+y, layer->height);
+    for (int i = y; i < h; i++) {
+        for (int j = x; j < w; j++) {
             layer->buff[i*layer->width + j] = color;
         }
     }

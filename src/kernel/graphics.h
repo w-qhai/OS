@@ -21,6 +21,23 @@
  * e 黄
  * f 白色
  */
+#define Black 0
+#define Blue 1
+#define Green 2
+#define DarkBlue 3
+#define Red 4
+#define Purple 5
+#define DarkYellow 6
+#define LightGrey 7
+#define DarkGrey 8
+#define LightBlue 9
+#define LightGreen 10
+#define LightBlue2 11
+#define LightRed 12
+#define LightPurple 13
+#define Yellow 14
+#define White 15
+
 
 void fill_box(int x, int y, int w, int h, int color, Layer* layer);
 void draw_cursor(int x, int y, Layer* layer);

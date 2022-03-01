@@ -265,7 +265,7 @@ void draw_char(char c, int x, int y, int color, Layer* layer) {
             if (fonts[c][i] & (0x80 >> j)) {
 				layer->buff[(i + y) * layer->width + (j + x)] = color;
             }
-			else {
+			else if (layer->alpha != -1) {
 				layer->buff[(i + y) * layer->width + (j + x)] = layer->alpha;
 			}
         }

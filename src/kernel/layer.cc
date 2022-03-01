@@ -108,6 +108,29 @@ void LayerManager::refresh(int x, int y, int w, int h) {
             }
         }
     }
+
+    Layer* layer = sheets[2];
+    int bx0 = x - layer->x;
+    int by0 = y - layer->y;
+    int bx1 = x + w - layer->x;
+    int by1 = y + h - layer->y;
+
+    bx0 = max(bx0, 0);
+    by0 = max(by0, 0);
+
+    bx1 = min(layer->width, bx1);
+    by1 = min(layer->height, by1);
+
+    for (int i = by0; i < by1; i++) {
+        int ry = i + layer->y;
+        for (int j = bx0; j < bx1; j++) {
+            int rx = j + layer->x;
+            if (layer->buff[i*layer->width + j] != layer->alpha) {
+                ::vram[ry*scrn_w + rx] =
+                    layer->buff[i*layer->width + j];
+            }
+        }
+    }
 }
 
 void LayerManager::slide(Layer* layer, int x, int y) {

@@ -16,6 +16,7 @@ OBJS = 	$(BINDIR)/constants.o $(BINDIR)/main.o \
 		$(BINDIR)/queue.o \
 		$(BINDIR)/mouse.o $(BINDIR)/keyboard.o \
 		$(BINDIR)/memory.o 		$(BINDIR)/layer.o \
+		$(BINDIR)/window.o 
 
 $(IMAGE): Makefile $(BINDIR)/bootsect.bin $(BINDIR)/setup.bin $(BINDIR)/head.bin $(OBJS)
 # 1.44MB 可在bochs中使用，以便调试
