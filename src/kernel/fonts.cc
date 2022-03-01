@@ -266,15 +266,24 @@ void draw_char(char c, int x, int y, int color, Layer* layer) {
 				layer->buff[(i + y) * layer->width + (j + x)] = color;
             }
 			else {
-				layer->buff[(i + y) * layer->width + (j + x)] = -1;
+				layer->buff[(i + y) * layer->width + (j + x)] = layer->alpha;
 			}
         }
     }
+	LayerManager::refresh(layer->x+x, layer->y+y, 8, 16);
 }
 
 void draw_string(const char* str, int x, int y, int color, Layer* layer) {
-    for (int i = 0; str[i]; i++) {
+	int len = strlen(str);
+    for (int i = 0; i < len; i++) {
         draw_char(str[i], x + i * 8, y, color, layer);
     }
-	LayerManager::refresh(layer->x + x, layer->y + y, strlen(str) * 8, 16);
 }
+
+void draw_string(const int num, int x, int y, int color, Layer* layer) {
+	static char str[128];
+	sprintf(str, "%s", "                                     ");
+	sprintf(str, "%d", num);
+	draw_string(str, x, y, color, layer);
+}
+

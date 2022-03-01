@@ -4,7 +4,7 @@ VM2	=	bochs
 CC	= 	clang
 DEL	= 	rm
 
-OPTS    = -m32 -fasm-blocks -g -c -W
+OPTS    = -m32 -fasm-blocks -c -W
 BOOTDIR	= ./boot
 KERNEDIR= ./kernel
 BINDIR  = ./bin
@@ -44,6 +44,11 @@ qemu : Makefile $(IMAGE)
 	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE)
 bochs: Makefile $(IMAGE)
 	$(VM2)	-f bochsrc.txt
+
+debug:
+	$(VM1) -S -s -fda $(IMAGE) -boot a &
+	sleep 1
+	gdb -x gdb.script
 
 clean: Makefile
 	-$(DEL)	$(IMAGE)

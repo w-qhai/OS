@@ -9,7 +9,7 @@ void Layer::set_buff(uint8_t* buff, int width, int height, int alpha) {
     this->alpha = alpha;
 }
 
-int32_t LayerManager::top = 0;
+int32_t LayerManager::top = -1;
 Layer* LayerManager::sheets[Max_Layer];
 Layer LayerManager::sheets0[Max_Layer];
 
@@ -31,14 +31,12 @@ Layer* LayerManager::alloc(uint8_t* buff, int width, int height, int alpha) {
 }
 
 void LayerManager::updown(Layer* layer, int z_index) {
-    layer->z_index = z_index;
-    sheets[z_index] = layer;
-    
     int old_z_index = layer->z_index;
     z_index = min(z_index, top + 1);
     z_index = max(z_index, -1);
 
     layer->z_index = z_index;
+    sheets[z_index] = layer;
 
     if (old_z_index > z_index) { // 比以前低
         if (z_index >= 0) {
@@ -78,23 +76,6 @@ void LayerManager::updown(Layer* layer, int z_index) {
     refresh(layer->x, layer->y, layer->width, layer->height);
 }
 
-// void LayerManager::refresh() {
-//     for (int z = 0; z < Max_Layer; z++) {
-//         Layer* layer = sheets[z];
-//         if (layer->flags == 0) {
-//             continue;
-//         }
-//         // 绘制当前层
-//         for (int y = 0; y < layer->height; y++) {
-//             int ry = layer->y + y;
-//             for (int x = 0; x < layer->width; x++) {
-//                 int rx = layer->x + x;
-//                 ::vram[ry * scrn_w + rx] = layer->buff[y * layer->width +x];
-//             }
-//         }
-//     }
-// }
-
 void LayerManager::refresh(int x, int y, int w, int h) {
 
     x = max(x, 0);
@@ -102,11 +83,8 @@ void LayerManager::refresh(int x, int y, int w, int h) {
     w = min(scrn_w - x, w);
     h = min(scrn_h - y, h);
 
-    for (int z = 0; z < Max_Layer; z++) {
+    for (int z = 0; z <= top; z++) {
         Layer* layer = sheets[z];
-        if (layer->flags == 0) {
-            continue;
-        }
 
         int bx0 = x - layer->x;
         int by0 = y - layer->y;
@@ -140,7 +118,6 @@ void LayerManager::slide(Layer* layer, int x, int y) {
     if (layer->z_index >= 0) {
         refresh(old_x, old_y, layer->width, layer->height);
         refresh(x, y, layer->width, layer->height);
-        // refresh();
     }
 }
 

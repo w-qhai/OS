@@ -3,7 +3,7 @@
 void fill_box(int x, int y, int w, int h, int color, Layer* layer) {
     for (int i = y; i < y + h; i++) {
         for (int j = x; j < x + w; j++) {
-            layer->buff[i* layer->width + j] = color;
+            layer->buff[i*layer->width + j] = color;
         }
     }
     LayerManager::refresh(layer->x + x, layer->y + y, w, h);
@@ -38,7 +38,7 @@ void draw_cursor(int x, int y, Layer* layer) {
                 layer->buff[i*curosr_size+j] = 15;
             }
             if (cursor[i][j] == '.') {
-                layer->buff[i*curosr_size+j] = 99;
+                layer->buff[i*curosr_size+j] = layer->alpha;
             }
         }
     }
