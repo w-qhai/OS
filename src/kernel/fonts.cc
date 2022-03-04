@@ -1,4 +1,6 @@
 #include "fonts.h"
+#include "window.h"
+
 uint8_t fonts[256][16] = {
 	{0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0},
 	{0x0,0x0,0x38,0x44,0x82,0xaa,0xaa,0x82,0x82,0xaa,0x92,0x44,0x38,0x0,0x0,0x0},
@@ -265,12 +267,12 @@ void draw_char(char c, int x, int y, int color, Layer* layer) {
             if (fonts[c][i] & (0x80 >> j)) {
 				layer->buff[(i + y) * layer->width + (j + x)] = color;
             }
-			else if (layer->alpha != -1) {
+			else if (layer->alpha) {
 				layer->buff[(i + y) * layer->width + (j + x)] = layer->alpha;
 			}
         }
     }
-	LayerManager::refresh(layer->x+x, layer->y+y, 8, 16);
+	// LayerManager::refresh(layer->x+x, layer->y+y, 8, 16, layer->z_index);
 }
 
 void draw_string(const char* str, int x, int y, int color, Layer* layer) {
@@ -278,12 +280,31 @@ void draw_string(const char* str, int x, int y, int color, Layer* layer) {
     for (int i = 0; i < len; i++) {
         draw_char(str[i], x + i * 8, y, color, layer);
     }
+	if (layer->alpha) {
+		LayerManager::refresh(layer->x+x, layer->y+y, len*8, 16, layer->z_index-1);
+	}
+	else {
+		LayerManager::refresh(layer->x+x, layer->y+y, len*8, 16, layer->z_index);
+	}
+}
+
+void draw_string(const char* str, int x, int y, int color, Window* win) {
+	x += 5;
+	y += 25;
+	draw_string(str, x, y, color, win->layer());
 }
 
 void draw_string(const int num, int x, int y, int color, Layer* layer) {
-	static char str[128];
-	sprintf(str, "%s", "                                     ");
+	char str[128];
 	sprintf(str, "%d", num);
 	draw_string(str, x, y, color, layer);
+}
+
+void draw_string(const int num, int x, int y, int color, Window* win) {
+	x += 5;
+	y += 25;
+	char str[128];
+	sprintf(str, "%d", num);
+	draw_string(str, x, y, color, win->layer());
 }
 

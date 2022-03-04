@@ -1,20 +1,17 @@
 #include "layer.h"
 
 void Layer::set_buff(uint8_t* buff, int width, int height, int alpha) {
-    // MemoryManager::free(buff, width * height);
-    // this->buff = (uint8_t*)MemoryManager::alloc(width * height);
     this->buff = buff;
     this->width = width;
     this->height = height;
     this->alpha = alpha;
 }
 
-int32_t LayerManager::top = -1;
+int32_t LayerManager::top = 0;
 Layer* LayerManager::sheets[Max_Layer];
 Layer LayerManager::sheets0[Max_Layer];
 
-LayerManager::LayerManager() {
-}
+LayerManager::LayerManager() {}
 
 Layer* LayerManager::alloc(uint8_t* buff, int width, int height, int alpha) {
     Layer* layer = nullptr;
@@ -32,7 +29,7 @@ Layer* LayerManager::alloc(uint8_t* buff, int width, int height, int alpha) {
 
 void LayerManager::updown(Layer* layer, int z_index) {
     int old_z_index = layer->z_index;
-    z_index = min(z_index, top + 1);
+    z_index = min(z_index, top);
     z_index = max(z_index, -1);
 
     layer->z_index = z_index;
@@ -56,7 +53,7 @@ void LayerManager::updown(Layer* layer, int z_index) {
             top--;
         }
     }        
-    else if (old_z_index < z_index) { // 比以前低
+    else if (old_z_index < z_index) { // 比以前高
         if (old_z_index >= 0) {
             for (int i = old_z_index; i < z_index; i++) {
                 sheets[i] = sheets[i+1];
@@ -65,7 +62,7 @@ void LayerManager::updown(Layer* layer, int z_index) {
             sheets[z_index] = layer;
         }
         else {
-            for (int i = top; i >= z_index; i--) {
+            for (int i = top-1; i >= z_index; i--) {
                 sheets[i+1] = sheets[i];
                 sheets[i+1]->z_index = i + 1;
             }
@@ -73,17 +70,16 @@ void LayerManager::updown(Layer* layer, int z_index) {
             top++;
         }
     }
-    refresh(layer->x, layer->y, layer->width, layer->height);
+    refresh(layer->x, layer->y, layer->width, layer->height, layer->z_index);
 }
 
-void LayerManager::refresh(int x, int y, int w, int h) {
-
+void LayerManager::refresh(int x, int y, int w, int h, int z_index) {
     x = max(x, 0);
     y = max(y, 0);
     w = min(scrn_w - x, w);
     h = min(scrn_h - y, h);
 
-    for (int z = 0; z <= top; z++) {
+    for (int z = z_index; z < top; z++) {
         Layer* layer = sheets[z];
 
         int bx0 = x - layer->x;
@@ -139,8 +135,8 @@ void LayerManager::slide(Layer* layer, int x, int y) {
     layer->x = x;
     layer->y = y;
     if (layer->z_index >= 0) {
-        refresh(old_x, old_y, layer->width, layer->height);
-        refresh(x, y, layer->width, layer->height);
+        refresh(old_x, old_y, layer->width, layer->height, 0);
+        refresh(x, y, layer->width, layer->height, layer->z_index);
     }
 }
 

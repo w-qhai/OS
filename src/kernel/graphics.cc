@@ -8,7 +8,7 @@ void fill_box(int x, int y, int w, int h, int color, Layer* layer) {
             layer->buff[i*layer->width + j] = color;
         }
     }
-    LayerManager::refresh(layer->x + x, layer->y + y, w, h);
+    LayerManager::refresh(layer->x + x, layer->y + y, w, h, layer->z_index);
 }
 
 void draw_cursor(int x, int y, Layer* layer) {
@@ -44,7 +44,7 @@ void draw_cursor(int x, int y, Layer* layer) {
             }
         }
     }
-    LayerManager::refresh(layer->x + x, layer->y + y, curosr_size, curosr_size);
+    LayerManager::refresh(layer->x + x, layer->y + y, curosr_size, curosr_size, 0);
 }
 
 void draw_desktop(Layer* layer) {

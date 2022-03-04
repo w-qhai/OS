@@ -14,6 +14,12 @@ private:
     int height;
     char* title;
 public:
+    friend Window* create_window(int x, int y, int w, int h, const char title[]);
     Window();
     ~Window();
+    inline Layer* layer() {
+        return this->back;
+    }
 };
+
+Window* create_window(int x, int y, int w, int h, const char title[]);

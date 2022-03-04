@@ -7,6 +7,7 @@
 #include "keyboard.h"
 #include "memory.h"
 #include "layer.h"
+#include "window.h"
 
 Layer* layer_back;
 Layer* layer_mouse;
@@ -18,65 +19,14 @@ static char mem_info[20];
 void init_system();
 void init_layer();
 
-void create_window(int x, int y, int w, int h, const char title[]) {
-    Layer* layer = LayerManager::alloc((uint8_t*)MemoryManager::alloc(w*h), w, h, -1);
-    LayerManager::slide(layer, x, y);
-    LayerManager::updown(layer, 100);
-    static char close_icon[14][17] = {
-        "OOOOOOOOOOOOOOO@",
-        "OQQQQQQQQQQQQQ$@",
-        "OQQQQQQQQQQQQQ$@",
-        "OQQQ@@QQQQ@@QQ$@",
-        "OQQQQ@@QQ@@QQQ$@",
-        "OQQQQQ@@@@QQQQ$@",
-        "OQQQQQQ@@QQQQQ$@",
-        "OQQQQQ@@@@QQQQ$@",
-        "OQQQQ@@QQ@@QQQ$@",
-        "OQQQ@@QQQQ@@QQ$@",
-        "OQQQQQQQQQQQQQ$@",
-        "OQQQQQQQQQQQQQ$@",
-        "O$$$$$$$$$$$$$$@",
-        "@@@@@@@@@@@@@@@@"
-    };
-
-    fill_box(0, 0,      w, 1, LightGrey, layer);
-    fill_box(1, 1,      w-1, 2, White, layer);
-    fill_box(0, 0,      1, h, LightGrey, layer);
-    fill_box(1, 1,      2, h-1, White, layer);
-    fill_box(w-2, 1,    w-1, h-1, LightGrey, layer);
-    fill_box(w-1, 0,    w, h, Black, layer);
-    fill_box(2, 2,      w-3, h-3, LightGrey, layer);
-    fill_box(3, 3,      w-5, 20, Blue, layer);
-    fill_box(1, h-2,    w-1, h-1, DarkGrey, layer);
-    fill_box(0, h-1,    w, h, Black, layer);
-
-    draw_string(title, 5, 5, White, layer);
-    for (int i = 0; i < 14; i++) {
-        for (int j = 0; j < 16; j++) {
-            char c;
-            switch (close_icon[i][j]) {
-                case '@': c = Black; break;
-                case '$': c = DarkGrey; break;
-                case 'Q': c = LightGrey; break;
-                default: c = White; break;
-            }
-            layer->buff[(5+i)*layer->width + (layer->width-21+j)] = c;
-        }
-    }
-
-    draw_string("Welcome to", 10, 30, White, layer);
-    fill_box(10, 30, strlen("Welcome to")*8 + 1, 17, LightGrey, layer);
-    draw_string("PianOS", 10, 46, Black, layer);
-
-    LayerManager::refresh(x, y, w, h);
-}
-
 int main(void) {
     init_system();
     init_layer();
-    create_window(50, 50, 120, 120, "Window");
+    Window* win = create_window(50, 50, 120, 120, "Window");
+    uint32_t count = 0;
     while(true) {
         cli();
+        draw_string(count++, 0, 0, Red, win);
         if (!keyboard_buff.empty()) {
             uint8_t data = keyboard_buff.front();
             keyboard_buff.pop();
@@ -144,7 +94,7 @@ void init_layer() {
         (uint8_t*)MemoryManager::alloc(win_w*win_h), 
         ::scrn_w, ::scrn_h, 99);
     //  图层置为透明
-    for (int i = 0; i < ::scrn_h * ::scrn_w; i++) {
+    for (int i = 0; i < win_w*win_h; i++) {
         layer_log->buff[i] = 99;
     }
 
