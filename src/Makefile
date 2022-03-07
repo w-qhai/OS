@@ -35,8 +35,8 @@ $(BINDIR)/%.bin: $(BOOTDIR)/%.asm
 $(BINDIR)/head.bin: $(BOOTDIR)/head.asm
 	$(AS) -felf32 $(BOOTDIR)/head.asm -o $(BINDIR)/head.bin
 
-$(BINDIR)/%.o: $(KERNEDIR)/%.cc
-	$(CC) $(OPTS) $^ -o $@ 
+$(BINDIR)/%.o: $(KERNEDIR)/%.cc $(KERNEDIR)/%.h
+	$(CC) $(OPTS) $< -o $@ 
 #	$(CC) -m32 -fno-asynchronous-unwind-tables -fno-pie -fcf-protection=none -mmanual-endbr -c $^ -o $@
 
 run : Makefile $(IMAGE)

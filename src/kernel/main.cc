@@ -23,10 +23,15 @@ int main(void) {
     init_system();
     init_layer();
     Window* win = create_window(50, 50, 120, 120, "Window");
-    uint32_t count = 0;
+    uint32_t total = 0;
     while(true) {
         cli();
-        draw_string(count++, 0, 0, Red, win);
+        uint32_t total = 0;
+        for (uint32_t i = 0; i < MemoryManager::unused; i++) {
+            total += MemoryManager::blocks[i].size;
+        }
+        total = MemoryManager::total();
+        draw_string(total, 0, 0, Red, win);
         if (!keyboard_buff.empty()) {
             uint8_t data = keyboard_buff.front();
             keyboard_buff.pop();
@@ -74,9 +79,6 @@ void init_system() {
     init_keyboard();
     enable_mouse();
     is_mouse_init = false;
-
-    MemoryManager::free((void*)0, MemoryManager::size);
-    MemoryManager::alloc(1474560);  // 1.44MB 后作为堆
 }
 
 void init_layer() {

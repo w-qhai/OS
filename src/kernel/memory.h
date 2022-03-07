@@ -1,7 +1,7 @@
 #pragma once
 #include "constants.h"
 
-#define MemBlockCnt 1000
+#define MemBlockCnt 10
 
 struct MemoryBlock {
     uint32_t addr;
@@ -13,7 +13,6 @@ class MemoryManager {
 public:
     static uint32_t size;
 
-private:
     static uint32_t unused;
     static uint32_t capacity;
     static uint32_t faild_total_size;
