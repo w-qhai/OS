@@ -1,7 +1,6 @@
 #pragma once
 #include "constants.h"
-
-#define MemBlockCnt 10
+#include "list.hpp"
 
 struct MemoryBlock {
     uint32_t addr;
@@ -12,15 +11,11 @@ class MemoryManager {
 
 public:
     static uint32_t size;
-
-    static uint32_t unused;
-    static uint32_t capacity;
-    static uint32_t faild_total_size;
-    static uint32_t faild_count;
-    static MemoryBlock blocks[MemBlockCnt];
+    
+private:
+    static List<MemoryBlock, 2048> blocks;
 
 public:
-    MemoryManager();
     static void init();
     static uint32_t total();
     static void* alloc(uint32_t size);

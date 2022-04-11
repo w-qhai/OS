@@ -14,7 +14,7 @@ Layer* layer_mouse;
 Layer* layer_log;
 
 static char mouse_info[20];
-static char mem_info[20];
+static char mem_info[128];
 
 void init_system();
 void init_layer();
@@ -22,16 +22,10 @@ void init_layer();
 int main(void) {
     init_system();
     init_layer();
+
     Window* win = create_window(50, 50, 120, 120, "Window");
-    uint32_t total = 0;
     while(true) {
         cli();
-        uint32_t total = 0;
-        for (uint32_t i = 0; i < MemoryManager::unused; i++) {
-            total += MemoryManager::blocks[i].size;
-        }
-        total = MemoryManager::total();
-        draw_string(total, 0, 0, Red, win);
         if (!keyboard_buff.empty()) {
             uint8_t data = keyboard_buff.front();
             keyboard_buff.pop();

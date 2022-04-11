@@ -4,10 +4,10 @@ VM2	=	bochs
 CC	= 	clang
 DEL	= 	rm
 
-OPTS    = -m32 -fasm-blocks -c -W
+OPTS    = -m32 -fasm-blocks -c -W -fno-use-linker-plugin
 BOOTDIR	= ./boot
 KERNEDIR= ./kernel
-BINDIR  = ./bin
+BINDIR  = ../bin
 IMAGE   = PianOS.img
 
 OBJS = 	$(BINDIR)/constants.o $(BINDIR)/main.o \
@@ -18,7 +18,7 @@ OBJS = 	$(BINDIR)/constants.o $(BINDIR)/main.o \
 		$(BINDIR)/memory.o 		$(BINDIR)/layer.o \
 		$(BINDIR)/window.o 
 
-$(IMAGE): Makefile $(BINDIR)/bootsect.bin $(BINDIR)/setup.bin $(BINDIR)/head.bin $(OBJS)
+$(IMAGE): $(BINDIR)/bootsect.bin $(BINDIR)/setup.bin $(BINDIR)/head.bin $(OBJS) Makefile
 # 1.44MB 可在bochs中使用，以便调试
 	ld $(BINDIR)/head.bin $(OBJS) -e start -melf_i386 -Ttext 0x0 -o $(BINDIR)/PianOS.sys
 	@cp $(BINDIR)/PianOS.sys $(BINDIR)/PianOS.syss
@@ -29,21 +29,27 @@ $(IMAGE): Makefile $(BINDIR)/bootsect.bin $(BINDIR)/setup.bin $(BINDIR)/head.bin
 	@dd if=$(BINDIR)/PianOS.sys		of=PianOS.img	bs=512 		seek=5 	conv=notrunc 2>>/dev/null
 	-@echo "\e[01;32m[Build Successfully]\e[00m"
 
-$(BINDIR)/%.bin: $(BOOTDIR)/%.asm
-	$(AS) $^ -o $@ 
+$(BINDIR)/%.bin: $(BOOTDIR)/%.asm Makefile
+	$(AS) $< -o $@ 
 
-$(BINDIR)/head.bin: $(BOOTDIR)/head.asm
+$(BINDIR)/head.bin: $(BOOTDIR)/head.asm Makefile
 	$(AS) -felf32 $(BOOTDIR)/head.asm -o $(BINDIR)/head.bin
 
-$(BINDIR)/%.o: $(KERNEDIR)/%.cc $(KERNEDIR)/%.h
+$(BINDIR)/asmfun.o: $(KERNEDIR)/asmfun.cc Makefile
 	$(CC) $(OPTS) $< -o $@ 
-#	$(CC) -m32 -fno-asynchronous-unwind-tables -fno-pie -fcf-protection=none -mmanual-endbr -c $^ -o $@
 
-run : Makefile $(IMAGE)
+$(BINDIR)/main.o: $(KERNEDIR)/main.cc Makefile
+	g++ -fno-stack-protector -m32 -fno-asynchronous-unwind-tables -fno-use-cxa-atexit -fno-pie -fcf-protection=none -mmanual-endbr -c $< -o $@
+
+$(BINDIR)/%.o: $(KERNEDIR)/%.cc $(KERNEDIR)/%.h Makefile
+# 	$(CC) $(OPTS) $< -o $@ 
+	g++ -fno-stack-protector -m32 -fno-asynchronous-unwind-tables -fno-use-cxa-atexit -fno-pie -fcf-protection=none -mmanual-endbr -c $< -o $@
+
+run : Makefile $(IMAGE) Makefile
 	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE) -m 128
-qemu : Makefile $(IMAGE)
+qemu : Makefile $(IMAGE) Makefile
 	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE)
-bochs: Makefile $(IMAGE)
+bochs: Makefile $(IMAGE) Makefile
 	$(VM2)	-f bochsrc.txt
 
 debug:
