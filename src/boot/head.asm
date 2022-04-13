@@ -38,16 +38,13 @@ start:
 
     call    setup_idt
     call    setup_gdt
-    jmp     1*8:newgdt
-    nop
-    nop 
+	MOV		EAX,CR0
+	AND		EAX,0x7fffffff	; 设bit31为0（禁用分页）
+	OR		EAX,0x00000001	; bit0到1转换（保护模式过渡）
+	MOV		CR0,EAX
+	
 
-newgdt:
-
-    cli ;关掉中断 
- 
-
-call  A20open
+	call  A20open
 
 ;前面3个入栈0值分别表示main函数的参数envp、argv指针和argc，但main()没有用到。
 ;push _main入栈操作是模拟调用main时将返回地址入栈的操作，所以如果main.c程序
@@ -65,16 +62,6 @@ jmp  setup_paging   ;这里用的JMP而不是call，就是为了在setup_paging�
 L6:
 jmp L6 ;main程序绝对不应该返回到这里。不过为了以防万一，
      ;所以添加了该语句。这样我们就知道发生什么问题了。
-     
-test_keyboard:       ; 测试键盘中断
-mov al, 11111101b  ; 开启键盘中断开关 
-out 021h, al       ; 主8259, OCW1.
-dw  0x00eb,0x00eb   ;时延
-mov al, 11111111b   ; 屏蔽从芯片所有中断请求
-out 0A1h, al       ; 从8259, OCW1.
-dw	0x00eb,0x00eb  ;时延
-ret
-
 
 ;Linux将内核的内存页表直接放在页目录之后，使用了4个表来寻址16 MB的物理内存。
 ;如果你有多于16 Mb的内存，就需要在这里进行扩充修改。
@@ -88,10 +75,10 @@ setup_paging:
 ;则第1个页表所在的地址 = 0x00001007 & 0xfffff000 = 0x1000；
 ;第1个页表的属性标志 = 0x00001007&0x00000fff = 0x07,表示该页存在、用户可读写。
 ;一句指令就把页表的地址和属性完全完整定义了，这个写法设计得有点巧妙。    
-mov dword [_pg_dir],pg0+7       ;页表0索引 将直接覆盖0地址处的3字节长度jmp指令 
-mov dword [_pg_dir+4],pg1+7     ;页表1索引
-mov dword [_pg_dir+8],pg2+7     ;页表2索引
-mov dword [_pg_dir+12],pg3+7    ;页表3索引 
+; mov dword [_pg_dir],pg0+7       ;页表0索引 将直接覆盖0地址处的3字节长度jmp指令 
+; mov dword [_pg_dir+4],pg1+7     ;页表1索引
+; mov dword [_pg_dir+8],pg2+7     ;页表2索引
+; mov dword [_pg_dir+12],pg3+7    ;页表3索引 
 
 
 ;下面填写4个页表中所有项的内容，共有：4(页表)*1024(项/页表)=4096项(0-0xfff)，
@@ -100,24 +87,24 @@ mov dword [_pg_dir+12],pg3+7    ;页表3索引
 ;填写使用的方法是从最后一个页表的最后一项开始按倒退顺序填写。
 ;每一个页表中最后一项在表中的位置是1023*4 = 4092.
 ;此最后一页的最后一项的位置就是pg3+4092。
-mov edi,pg3+4092;edi->最后一页的最后一项。
-mov eax,0xfff007;16Mb - 4096 + 7 (r/w user,p) */
-;最后1项对应物理内存页面的地址是0xfff000，
-;加上属性标志7，即为0xfff007。
-std ;方向位置位，edi值递减(4字节)。
-goon:
-stosd  
-sub eax,0x1000;每填写好一项，物理地址值减0x1000。
-jge goon ;如果小于0则说明全添写好了。  jge是大于或等于转移指令
+; mov edi,pg3+4092;edi->最后一页的最后一项。
+; mov eax,0xfff007;16Mb - 4096 + 7 (r/w user,p) */
+; ;最后1项对应物理内存页面的地址是0xfff000，
+; ;加上属性标志7，即为0xfff007。
+; std ;方向位置位，edi值递减(4字节)。
+; goon:
+; stosd  
+; sub eax,0x1000;每填写好一项，物理地址值减0x1000。
+; jge goon ;如果小于0则说明全添写好了。  jge是大于或等于转移指令
 
 
-;现在设置页目录表基址寄存器cr3，指向页目录表。cr3中保存的是页目录表的物理地址
-;再设置启动使用分页处理（cr0的PG标志，位31）
-xor eax,eax ;pg_dir is at 0x0000 */ # 页目录表在0x0000处。
-mov cr3,eax ;cr3 - page directory start */
-mov eax,cr0
-or eax,0x80000000  ;添上PG标志。
-mov cr0,eax ; set paging (PG) bit */
+; ;现在设置页目录表基址寄存器cr3，指向页目录表。cr3中保存的是页目录表的物理地址
+; ;再设置启动使用分页处理（cr0的PG标志，位31）
+; xor eax,eax ;pg_dir is at 0x0000 */ # 页目录表在0x0000处。
+; mov cr3,eax ;cr3 - page directory start */
+; mov eax,cr0
+; or eax,0x80000000  ;添上PG标志。
+; mov cr0,eax ; set paging (PG) bit */
      
 ret  ;setup_paging这里用的是返回指令ret。
 ;该返回指令的另一个作用是将压入堆栈中的main程序的地址弹出，
@@ -229,8 +216,10 @@ _idt:    times 256  dq 0  ;idt is uninitialized # 256项，每项8字节，填0�
 ;任务状态段TSS的描述符。
 ;(0-nul,1-cs,2-ds,3-syscall,4-TSS0,5-LDT0,6-TSS1,7-LDT1,8-TSS2 etc...)        
 _gdt: dq 0x0000000000000000 ;NULL descriptor */
-      dq 0x00c09a0000000fff ;16Mb */ # 0x08，内核代码段最大长度16MB。
-      dq 0x00c0920000000fff ;16Mb */ # 0x10，内核数据段最大长度16MB。
+;       dq 0x00c09a0000000fff ;16Mb */ # 0x08，内核代码段最大长度16MB。
+;       dq 0x00c0920000000fff ;16Mb */ # 0x10，内核数据段最大长度16MB。
+      dq 0x00c09a000000ffff ;16Mb */ # 0x08，内核代码段最大长度16MB。
+      dq 0x00cf92000000ffff ;16Mb */ # 0x10，内核数据段最大长度4GB。
       dq 0x0000000000000000 ;TEMPORARY - don't use */
       times 252 dq 0        ;space for LDT's and TSS's etc */ #
 

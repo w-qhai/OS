@@ -2,43 +2,57 @@
     %include    "boot/config.inc"
 
 start:
-; 改为图形模式 vga
-    mov     ax, 0x0013 
-    int     0x10
 
     mov     ax, INITSEG ; 把数据存在原来bootsect的位置
     mov     ds, ax
+    MOV		es, ax
+    MOV		di, 0x30
 
-    ;  读取光标位置
-    mov     ah, 0x03
-    mov     bh, 0
+;取得画面模式
+    MOV        CX,0x101
+    MOV        AX,0x4f01
+    INT        0x10
+    CMP        AX,0x004f
+    JNE        scrn320
+
+    MOV        AX,[ES:DI+0x12]
+    MOV        [0x20],AX
+    MOV        AX,[ES:DI+0x14]
+    MOV        [0x22],AX
+    MOV        EAX,[ES:DI+0x28]
+    MOV        [0x24],EAX
+
+    MOV        BX,0x4101
+    MOV        AX,0x4f02
+    INT        0x10
+
+    JMP        after
+
+scrn320:
+    mov     ax, 0x0013 
     int     0x10
 
-    mov     [0], dx
-
+after:
     ; 读取内存大小
-    ; mov     ah, 0x88
-    ; int     0x15
-    ; mov     [2], ax
     mov     ax, 0xe801
     int     0x15
     mov     [2], ax
     mov     [4], bx
 
     ; 读取显卡数据
-    mov     ah, 0x0f
-    int     0x10
-    mov     [6], bx ; bh = display page
-    mov     [8], ax ; al = video mode, ah = window width
+    ; mov     ah, 0x0f
+    ; int     0x10
+    ; mov     [6], bx ; bh = display page
+    ; mov     [8], ax ; al = video mode, ah = window width
 
     ; 检查ega, vga 和一些配置数据
-    mov     ah, 0x12
-    mov     bl, 0x10
-    int     0x10
+    ; mov     ah, 0x12
+    ; mov     bl, 0x10
+    ; int     0x10
 
-    mov     [10], ax
-    mov     [12], bx
-    mov     [14], cx
+    ; mov     [10], ax
+    ; mov     [12], bx
+    ; mov     [14], cx
 
     ; 硬盘数据 hd0
     ; mov     ax, 0x0000

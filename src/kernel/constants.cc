@@ -1,8 +1,8 @@
 #include "constants.h"
 
-uint8_t* const vram = (uint8_t*)0xa0000;
-const int scrn_w = win_w;
-const int scrn_h = win_h;
+uint8_t* vram;
+int scrn_w;
+int scrn_h;
 
 Queue mouse_buff = { 0 };
 Queue keyboard_buff = { 0 };

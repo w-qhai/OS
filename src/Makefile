@@ -43,10 +43,11 @@ $(BINDIR)/main.o: $(KERNEDIR)/main.cc Makefile
 
 $(BINDIR)/%.o: $(KERNEDIR)/%.cc $(KERNEDIR)/%.h Makefile
 # 	$(CC) $(OPTS) $< -o $@ 
-	g++ -fno-stack-protector -m32 -fno-asynchronous-unwind-tables -fno-use-cxa-atexit -fno-pie -fcf-protection=none -mmanual-endbr -c $< -o $@
+# 	g++ -fno-stack-protector -m32 -fno-asynchronous-unwind-tables -fno-use-cxa-atexit -fno-pie -fcf-protection=none -mmanual-endbr -c $< -o $@
+	g++ -m32 -fno-use-cxa-atexit -nostdlib -c $< -o $@
 
 run : Makefile $(IMAGE) Makefile
-	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE) -m 128
+	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE) -m 4G -vga std
 qemu : Makefile $(IMAGE) Makefile
 	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE)
 bochs: Makefile $(IMAGE) Makefile
