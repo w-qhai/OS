@@ -14,14 +14,7 @@ Window* create_window(int x, int y, int w, int h, const char title[]) {
     win->back = LayerManager::alloc((uint8_t*)MemoryManager::alloc(w*h), w, h, -1);
 
     LayerManager::slide(win->back, x, y);
-    LayerManager::updown(win->back, Max_Layer);
-
-    // win->content = LayerManager::alloc((uint8_t*)MemoryManager::alloc((w-5)*(h-25)), w-5, h-25, 99);
-    // for (int i = 0; i < (w-5)*(h-25); i++) {
-    //     win->content->buff[i] = win->content->alpha;
-    // }
-    // LayerManager::slide(win->content, x+5, y+25);
-    // LayerManager::updown(win->content, Max_Layer);
+    // LayerManager::updown(win->back, Max_Layer);
 
     win->x = x;
     win->y = y;
@@ -75,6 +68,6 @@ Window* create_window(int x, int y, int w, int h, const char title[]) {
         }
     }
 
-    LayerManager::refresh(x, y, w, h, win->back->z_index);
+    // LayerManager::refresh(x, y, w, h, win->back->z_index);
     return win;
 }

@@ -6,7 +6,6 @@
 
 class Window {
 private:
-    Layer* content;
     Layer* back;
     int x;
     int y;
@@ -19,6 +18,10 @@ public:
     ~Window();
     inline Layer* layer() {
         return this->back;
+    }
+    inline void show() {
+        LayerManager::updown(this->back, Max_Layer);    // 置顶
+        LayerManager::refresh(x, y, width, height, this->back->z_index);
     }
 };
 

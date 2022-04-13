@@ -7,7 +7,7 @@ void Layer::set_buff(uint8_t* buff, int width, int height, int alpha) {
     this->alpha = alpha;
 }
 
-int32_t LayerManager::top = 0;
+int32_t LayerManager::top = 0;  // 表示层数个数
 Layer* LayerManager::sheets[Max_Layer];
 Layer LayerManager::sheets0[Max_Layer];
 
@@ -28,12 +28,12 @@ Layer* LayerManager::alloc(uint8_t* buff, int width, int height, int alpha) {
 }
 
 void LayerManager::updown(Layer* layer, int z_index) {
-    int old_z_index = layer->z_index;
+    int old_z_index = layer->z_index;   // 保存旧的层数，
     z_index = min(z_index, top);
-    z_index = max(z_index, -1);
+    z_index = max(z_index, -1);         // 保证新的层数在合理范围内
 
-    layer->z_index = z_index;
-    sheets[z_index] = layer;
+    layer->z_index = z_index;           
+    sheets[z_index] = layer;            
 
     if (old_z_index > z_index) { // 比以前低
         if (z_index >= 0) {
@@ -73,6 +73,7 @@ void LayerManager::updown(Layer* layer, int z_index) {
     refresh(layer->x, layer->y, layer->width, layer->height, layer->z_index);
 }
 
+// 从指定层开始 绘制指定区域
 void LayerManager::refresh(int x, int y, int w, int h, int z_index) {
     x = max(x, 0);
     y = max(y, 0);
@@ -104,29 +105,6 @@ void LayerManager::refresh(int x, int y, int w, int h, int z_index) {
             }
         }
     }
-
-    Layer* layer = sheets[2];
-    int bx0 = x - layer->x;
-    int by0 = y - layer->y;
-    int bx1 = x + w - layer->x;
-    int by1 = y + h - layer->y;
-
-    bx0 = max(bx0, 0);
-    by0 = max(by0, 0);
-
-    bx1 = min(layer->width, bx1);
-    by1 = min(layer->height, by1);
-
-    for (int i = by0; i < by1; i++) {
-        int ry = i + layer->y;
-        for (int j = bx0; j < bx1; j++) {
-            int rx = j + layer->x;
-            if (layer->buff[i*layer->width + j] != layer->alpha) {
-                ::vram[ry*scrn_w + rx] =
-                    layer->buff[i*layer->width + j];
-            }
-        }
-    }
 }
 
 void LayerManager::slide(Layer* layer, int x, int y) {
@@ -135,8 +113,8 @@ void LayerManager::slide(Layer* layer, int x, int y) {
     layer->x = x;
     layer->y = y;
     if (layer->z_index >= 0) {
-        refresh(old_x, old_y, layer->width, layer->height, 0);
-        refresh(x, y, layer->width, layer->height, layer->z_index);
+        refresh(old_x, old_y, layer->width, layer->height, 0);  // 绘制旧区域
+        refresh(x, y, layer->width, layer->height, layer->z_index); // 绘制新区域
     }
 }
 

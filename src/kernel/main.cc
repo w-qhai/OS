@@ -24,44 +24,48 @@ int main(void) {
     init_layer();
 
     Window* log_win = create_window(50, 50, 200, 200, "Log");
-    char num_str[20];
-    sprintf(num_str, "%x", vram);
-    draw_string(num_str, 0, 0, Red, log_win);
-    draw_string(scrn_w, 0, 16, Red, log_win);
-    draw_string(scrn_h, 0, 32, Red, log_win);
+    static char str_buff[128];
+    sprintf(str_buff, "VRAM: %x", vram);
+    draw_string(str_buff, 0, 0, Green, log_win);
+    sprintf(str_buff, "WIDTH: %d", scrn_w);
+    draw_string(str_buff, 0, 16, Green, log_win);
+    sprintf(str_buff, "HEIGHT: %d", scrn_h);
+    draw_string(str_buff, 0, 32, Green, log_win);
 
-    // while(true) {
-    //     cli();
-    //     if (!keyboard_buff.empty()) {
-    //         uint8_t data = keyboard_buff.front();
-    //         keyboard_buff.pop();
-    //         sti();
-    //     }
-    //     if (!mouse_buff.empty()) {
-    //         int mouse_date_size = 3;
-    //         static int8_t data[3];  // 有符号接收
-    //         static int read_status;
-    //         //舍弃刚开始0xfa
-    //         if (is_mouse_init == false && mouse_buff.front() == 0xfa) {
-    //             is_mouse_init = true;
-    //             mouse_buff.pop();  
-    //             read_status = 0;
-    //             sti();
-    //         } else if (is_mouse_init) { // 初始化完成
-    //             data[read_status++] = mouse_buff.front();
-    //             mouse_buff.pop();
-    //             sti();
-    //             if (read_status == mouse_date_size) { // 读完2字节
-    //                 Mouse tm = mouse;
-    //                 mouse_decode(data);
-    //                 LayerManager::slide(layer_mouse, mouse.x, mouse.y);  
-    //                 sprintf(mouse_info, "(%d, %d)", mouse.x, mouse.y);
-    //                 read_status = 0;
-    //             } 
-    //         }
-    //     }
-    //     sti(); 
-    // }
+    log_win->show();
+
+    while(true) {
+        cli();
+        if (!keyboard_buff.empty()) {
+            uint8_t data = keyboard_buff.front();
+            keyboard_buff.pop();
+            sti();
+        }
+        if (!mouse_buff.empty()) {
+            int mouse_date_size = 3;
+            static int8_t data[3];  // 有符号接收
+            static int read_status;
+            //舍弃刚开始0xfa
+            if (is_mouse_init == false && mouse_buff.front() == 0xfa) {
+                is_mouse_init = true;
+                mouse_buff.pop();  
+                read_status = 0;
+                sti();
+            } else if (is_mouse_init) { // 初始化完成
+                data[read_status++] = mouse_buff.front();
+                mouse_buff.pop();
+                sti();
+                if (read_status == mouse_date_size) { // 读完2字节
+                    Mouse tm = mouse;
+                    mouse_decode(data);
+                    LayerManager::slide(layer_mouse, mouse.x, mouse.y);  
+                    sprintf(mouse_info, "(%d, %d)", mouse.x, mouse.y);
+                    read_status = 0;
+                } 
+            }
+        }
+        sti(); 
+    }
     return 0;
 }
 
@@ -86,25 +90,20 @@ void init_system() {
 
 void init_layer() {
 //==============桌面层==============
-    uint8_t* buff =(uint8_t*) MemoryManager::alloc(scrn_w*scrn_h);
     layer_back = LayerManager::alloc(
-        buff,
+        (uint8_t*) MemoryManager::alloc(scrn_w*scrn_h), // 直接申请内存
         scrn_w, scrn_h, -1);  // 设置图层缓冲区
-    
-    for (int i = 0; i < scrn_h * scrn_w; i++) {
-        layer_back->buff[i] = Red;
-    }
 
     LayerManager::slide(layer_back, 0, 0);                      // 图层在（0，0）位置
     LayerManager::updown(layer_back, 0);
-    // draw_desktop(layer_back);
+    draw_desktop(layer_back);
 
 //==============鼠标层==============
-    // layer_mouse = LayerManager::alloc(
-    //     (uint8_t*)MemoryManager::alloc(curosr_size*curosr_size), 
-    //     curosr_size, curosr_size, 99);
+    layer_mouse = LayerManager::alloc(
+        (uint8_t*)MemoryManager::alloc(curosr_size*curosr_size), 
+        curosr_size, curosr_size, 99);
 
-    // LayerManager::slide(layer_mouse, mouse.x, mouse.y);
-    // LayerManager::updown(layer_mouse, 1);
-    // draw_cursor(0, 0, layer_mouse);
+    LayerManager::slide(layer_mouse, mouse.x, mouse.y);
+    LayerManager::updown(layer_mouse, 1);
+    draw_cursor(0, 0, layer_mouse);
 }

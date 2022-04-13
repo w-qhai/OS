@@ -43,7 +43,7 @@ int sprintf(char * str, const char *fmt, ...)
         {
             fmt++;
             switch(*fmt)
-         {
+                {
                 case 'd': /*整型*/
                 {
                         n = va_arg(ap, int);
@@ -195,7 +195,7 @@ int sprintf(char * str, const char *fmt, ...)
         }
         fmt++;
     }
-
+        *str = '\0';
     va_end(ap);
 
     return count;
