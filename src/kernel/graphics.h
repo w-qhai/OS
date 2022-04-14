@@ -38,7 +38,13 @@
 #define Yellow 14
 #define White 15
 
+struct Rect {
+    int x, y;
+    int w, h;
+};
+
 
 void fill_box(int x, int y, int w, int h, int color, lm::Layer* layer);
+void fill_box(Rect rect, int color, lm::Layer* layer);
 void draw_cursor(int x, int y, lm::Layer* layer);
 void draw_desktop(lm::Layer* layer);

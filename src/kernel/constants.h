@@ -15,6 +15,7 @@ struct Mouse {
     int button;
     int x, y;
 };
+
 extern Mouse mouse;
 
 extern "C" {

@@ -23,12 +23,13 @@ int main(void) {
     init_system();
     init_layer();
 
-    Window* log_win = create_window(50, 50, 400, 200, "Log");
+    Window* log_win = create_window(scrn_w-370, 20, 300, 150, "Log");
+    log_win->show();
     static char str_buff[128];
     // 显示 分辨率信息
-    sprintf(str_buff, "> VRAM: %x", vram);
+    sprintf(str_buff, "> VRAM:   0x%x", vram);
     draw_string(str_buff, 0, 0, White, log_win);
-    sprintf(str_buff, "> WIDTH: %d", scrn_w);
+    sprintf(str_buff, "> WIDTH:  %d", scrn_w);
     draw_string(str_buff, 0, 16, White, log_win);
     sprintf(str_buff, "> HEIGHT: %d", scrn_h);
     draw_string(str_buff, 0, 32, White, log_win);
@@ -38,11 +39,12 @@ int main(void) {
         mm::total()>>20, (mm::total()-mm::empty())>>10);
     draw_string(str_buff, 0, 48, White, log_win);
 
-
-    log_win->show();
-
+    Window* counter_win = create_window(20, 50, 200, 200, "Counter");
+    counter_win->show();
+    int count = 0;
     while(true) {
         cli();
+        draw_string(count++, 0, 0, White, counter_win);
         if (!keyboard_buff.empty()) {
             uint8_t data = keyboard_buff.front();
             keyboard_buff.pop();
@@ -66,7 +68,8 @@ int main(void) {
                     Mouse tm = mouse;
                     mouse_decode(data);
                     lm::slide(layer_mouse, mouse.x, mouse.y);  
-                    sprintf(mouse_info, "(%d, %d)", mouse.x, mouse.y);
+                    sprintf(mouse_info, "> (%d, %d)      ", mouse.x, mouse.y);
+                    draw_string(mouse_info, 0, 16*4, White, log_win);
                     read_status = 0;
                 } 
             }
