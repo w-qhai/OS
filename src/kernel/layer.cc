@@ -1,20 +1,14 @@
 #include "layer.h"
 
-void Layer::set_buff(uint8_t* buff, int width, int height, int alpha) {
+void lm::Layer::set_buff(uint8_t* buff, int width, int height, int alpha) {
     this->buff = buff;
     this->width = width;
     this->height = height;
     this->alpha = alpha;
 }
 
-int32_t LayerManager::top = 0;  // 表示层数个数
-Layer* LayerManager::sheets[Max_Layer];
-Layer LayerManager::sheets0[Max_Layer];
-
-LayerManager::LayerManager() {}
-
-Layer* LayerManager::alloc(uint8_t* buff, int width, int height, int alpha) {
-    Layer* layer = nullptr;
+lm::Layer* lm::alloc(uint8_t* buff, int width, int height, int alpha) {
+    lm::Layer* layer = nullptr;
     for (int i = 0; i < Max_Layer; i++) {
         if (sheets0[i].flags == 0) {
             layer = sheets0 + i;
@@ -27,7 +21,7 @@ Layer* LayerManager::alloc(uint8_t* buff, int width, int height, int alpha) {
     return layer;
 }
 
-void LayerManager::updown(Layer* layer, int z_index) {
+void lm::updown(lm::Layer* layer, int z_index) {
     int old_z_index = layer->z_index;   // 保存旧的层数，
     z_index = min(z_index, top);
     z_index = max(z_index, -1);         // 保证新的层数在合理范围内
@@ -74,14 +68,14 @@ void LayerManager::updown(Layer* layer, int z_index) {
 }
 
 // 从指定层开始 绘制指定区域
-void LayerManager::refresh(int x, int y, int w, int h, int z_index) {
+void lm::refresh(int x, int y, int w, int h, int z_index) {
     x = max(x, 0);
     y = max(y, 0);
     w = min(scrn_w - x, w);
     h = min(scrn_h - y, h);
 
     for (int z = z_index; z < top; z++) {
-        Layer* layer = sheets[z];
+        lm::Layer* layer = sheets[z];
 
         int bx0 = x - layer->x;
         int by0 = y - layer->y;
@@ -107,7 +101,7 @@ void LayerManager::refresh(int x, int y, int w, int h, int z_index) {
     }
 }
 
-void LayerManager::slide(Layer* layer, int x, int y) {
+void lm::slide(lm::Layer* layer, int x, int y) {
     int old_x = layer->x;
     int old_y = layer->y;
     layer->x = x;
@@ -118,7 +112,7 @@ void LayerManager::slide(Layer* layer, int x, int y) {
     }
 }
 
-void LayerManager::free(Layer* layer) {
+void lm::free(lm::Layer* layer) {
     if (layer->z_index >= 0) {
         updown(layer, -1);
     }

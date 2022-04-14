@@ -6,7 +6,7 @@
 
 class Window {
 private:
-    Layer* back;
+    lm::Layer* back;
     int x;
     int y;
     int width;
@@ -14,14 +14,12 @@ private:
     char* title;
 public:
     friend Window* create_window(int x, int y, int w, int h, const char title[]);
-    Window();
-    ~Window();
-    inline Layer* layer() {
+    inline lm::Layer* layer() {
         return this->back;
     }
     inline void show() {
-        LayerManager::updown(this->back, Max_Layer);    // 置顶
-        LayerManager::refresh(x, y, width, height, this->back->z_index);
+        lm::updown(this->back, Max_Layer);    // 置顶
+        lm::refresh(x, y, width, height, this->back->z_index);
     }
 };
 

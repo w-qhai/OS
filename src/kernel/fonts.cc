@@ -260,7 +260,7 @@ uint8_t fonts[256][16] = {
 	{0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0}
 };
 
-void draw_char(char c, int x, int y, int color, Layer* layer) {
+void draw_char(char c, int x, int y, int color, lm::Layer* layer) {
     // 字体 16 * 8
     for (int i = 0; i < 16; i++) {
         for (int j = 0; j < 8; j++) {
@@ -272,19 +272,19 @@ void draw_char(char c, int x, int y, int color, Layer* layer) {
 			}
         }
     }
-	// LayerManager::refresh(layer->x+x, layer->y+y, 8, 16, layer->z_index);
+	// lm::refresh(layer->x+x, layer->y+y, 8, 16, layer->z_index);
 }
 
-void draw_string(const char* str, int x, int y, int color, Layer* layer) {
+void draw_string(const char* str, int x, int y, int color, lm::Layer* layer) {
 	int len = strlen(str);
     for (int i = 0; i < len; i++) {
         draw_char(str[i], x + i * 8, y, color, layer);
     }
 	if (layer->alpha) {
-		LayerManager::refresh(layer->x+x, layer->y+y, len*8, 16, layer->z_index-1);
+		lm::refresh(layer->x+x, layer->y+y, len*8, 16, layer->z_index-1);
 	}
 	else {
-		LayerManager::refresh(layer->x+x, layer->y+y, len*8, 16, layer->z_index);
+		lm::refresh(layer->x+x, layer->y+y, len*8, 16, layer->z_index);
 	}
 }
 
@@ -294,7 +294,7 @@ void draw_string(const char* str, int x, int y, int color, Window* win) {
 	draw_string(str, x, y, color, win->layer());
 }
 
-void draw_string(const int num, int x, int y, int color, Layer* layer) {
+void draw_string(const int num, int x, int y, int color, lm::Layer* layer) {
 	char str[128];
 	sprintf(str, "%d", num);
 	draw_string(str, x, y, color, layer);

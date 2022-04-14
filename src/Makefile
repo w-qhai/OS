@@ -47,7 +47,7 @@ $(BINDIR)/%.o: $(KERNEDIR)/%.cc $(KERNEDIR)/%.h Makefile
 	g++ -m32 -fno-use-cxa-atexit -nostdlib -c $< -o $@
 
 run : Makefile $(IMAGE) Makefile
-	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE) -m 4G -vga std
+	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE) -m 128 -vga std
 qemu : Makefile $(IMAGE) Makefile
 	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE)
 bochs: Makefile $(IMAGE) Makefile

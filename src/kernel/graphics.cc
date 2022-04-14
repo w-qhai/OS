@@ -1,6 +1,6 @@
 #include "graphics.h"
 
-void fill_box(int x, int y, int w, int h, int color, Layer* layer) {
+void fill_box(int x, int y, int w, int h, int color, lm::Layer* layer) {
     w = min(w+x, layer->width);
     h = min(h+y, layer->height);
     for (int i = y; i < h; i++) {
@@ -8,10 +8,10 @@ void fill_box(int x, int y, int w, int h, int color, Layer* layer) {
             layer->buff[i*layer->width + j] = color;
         }
     }
-    LayerManager::refresh(layer->x + x, layer->y + y, w, h, layer->z_index);
+    lm::refresh(layer->x + x, layer->y + y, w, h, layer->z_index);
 }
 
-void draw_cursor(int x, int y, Layer* layer) {
+void draw_cursor(int x, int y, lm::Layer* layer) {
     static uint8_t cursor[curosr_size][curosr_size+1] = {
         "*...............",
         "**..............",
@@ -44,10 +44,10 @@ void draw_cursor(int x, int y, Layer* layer) {
             }
         }
     }
-    LayerManager::refresh(layer->x + x, layer->y + y, curosr_size, curosr_size, 0);
+    lm::refresh(layer->x + x, layer->y + y, curosr_size, curosr_size, 0);
 }
 
-void draw_desktop(Layer* layer) {
+void draw_desktop(lm::Layer* layer) {
     fill_box(0, 0, scrn_w, scrn_h, DarkBlue, layer);
     fill_box(0, scrn_h - 21, scrn_w, 1, 5, layer);
     fill_box(0, scrn_h - 20, scrn_w, 20, 7, layer);

@@ -1,26 +1,16 @@
 #include "window.h"
 
-Window::Window()
-{
-
-}
-
-Window::~Window() {
-
-}
-
 Window* create_window(int x, int y, int w, int h, const char title[]) {
-    Window* win = (Window*)MemoryManager::alloc(sizeof(Window));
-    win->back = LayerManager::alloc((uint8_t*)MemoryManager::alloc(w*h), w, h, -1);
+    Window* win = (Window*)mm::alloc(sizeof(Window));
+    win->back = lm::alloc((uint8_t*)mm::alloc(w*h), w, h, -1);
 
-    LayerManager::slide(win->back, x, y);
-    // LayerManager::updown(win->back, Max_Layer);
+    lm::slide(win->back, x, y);
 
     win->x = x;
     win->y = y;
     win->width = w;
     win->height = h;
-    win->title = (char*)MemoryManager::alloc(strlen(title));
+    win->title = (char*)mm::alloc(strlen(title));
     for (int i = 0; title[i]; i++) {
         win->title[i] = title[i];
     }
@@ -67,7 +57,5 @@ Window* create_window(int x, int y, int w, int h, const char title[]) {
             win->back->buff[(5+i)*win->back->width + (win->back->width-21+j)] = c;
         }
     }
-
-    // LayerManager::refresh(x, y, w, h, win->back->z_index);
     return win;
 }

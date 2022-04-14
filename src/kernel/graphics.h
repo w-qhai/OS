@@ -39,6 +39,6 @@
 #define White 15
 
 
-void fill_box(int x, int y, int w, int h, int color, Layer* layer);
-void draw_cursor(int x, int y, Layer* layer);
-void draw_desktop(Layer* layer);
+void fill_box(int x, int y, int w, int h, int color, lm::Layer* layer);
+void draw_cursor(int x, int y, lm::Layer* layer);
+void draw_desktop(lm::Layer* layer);
