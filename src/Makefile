@@ -4,7 +4,7 @@ VM2	=	bochs
 CC	= 	clang
 DEL	= 	rm
 
-OPTS    = -m32 -fasm-blocks -c -W -fno-use-linker-plugin
+OPTS    = -m32 -fasm-blocks -c -W
 BOOTDIR	= ./boot
 KERNEDIR= ./kernel
 BINDIR  = ../bin
@@ -12,11 +12,11 @@ IMAGE   = PianOS.img
 
 OBJS = 	$(BINDIR)/constants.o $(BINDIR)/main.o \
 		$(BINDIR)/fonts.o $(BINDIR)/asmfun.o \
-		$(BINDIR)/graphics.o $(BINDIR)/int.o \
+		$(BINDIR)/graphics.o\
 		$(BINDIR)/queue.o \
 		$(BINDIR)/mouse.o $(BINDIR)/keyboard.o \
 		$(BINDIR)/memory.o 		$(BINDIR)/layer.o \
-		$(BINDIR)/window.o 
+		$(BINDIR)/window.o 		$(BINDIR)/timer.o
 
 $(IMAGE): $(BINDIR)/bootsect.bin $(BINDIR)/setup.bin $(BINDIR)/head.bin $(OBJS) Makefile
 # 1.44MB 可在bochs中使用，以便调试
@@ -39,8 +39,8 @@ $(BINDIR)/asmfun.o: $(KERNEDIR)/asmfun.cc Makefile
 	$(CC) $(OPTS) $< -o $@ 
 
 $(BINDIR)/main.o: $(KERNEDIR)/main.cc Makefile
-	g++ -fno-stack-protector -m32 -fno-asynchronous-unwind-tables -fno-use-cxa-atexit -fno-pie -fcf-protection=none -mmanual-endbr -c $< -o $@
-
+#	g++ -fno-stack-protector -m32 -fno-asynchronous-unwind-tables -fno-use-cxa-atexit -fno-pie -fcf-protection=none -mmanual-endbr -c $< -o $@
+	g++ -m32 -fno-use-cxa-atexit -nostdlib -c $< -o $@
 $(BINDIR)/%.o: $(KERNEDIR)/%.cc $(KERNEDIR)/%.h Makefile
 # 	$(CC) $(OPTS) $< -o $@ 
 # 	g++ -fno-stack-protector -m32 -fno-asynchronous-unwind-tables -fno-use-cxa-atexit -fno-pie -fcf-protection=none -mmanual-endbr -c $< -o $@

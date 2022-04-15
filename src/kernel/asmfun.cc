@@ -24,9 +24,9 @@ void sti() {
     }
 }
 
-void set_flags(int flags) {
+void set_flags(int flags_) {
     __asm {
-        mov     eax, [ebp + 8]
+        mov     eax, flags_
         push    eax
         popfd   
     }
@@ -42,7 +42,7 @@ int get_flags() {
 
 int in_byte(int port) {
     __asm {
-        mov     edx, [ebp + 8]
+        mov     edx, port
         mov     eax, 0
         in      al, dx
     }
@@ -50,15 +50,15 @@ int in_byte(int port) {
 
 void out_byte(int port, int data) {
     __asm {
-        mov     edx, [ebp + 8]
-        mov     eax, [ebp + 12]
+        mov     edx, port
+        mov     eax, data
         out     dx, al
     }
 }
 
-void set_cr0(int cr0) {
+void set_cr0(int cr0_) {
     __asm {
-        mov     eax, [ebp + 8]
+        mov     eax, cr0_
         mov     cr0, eax
     }
 }

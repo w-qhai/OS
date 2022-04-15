@@ -1,22 +1,26 @@
 #include "asmfun.h"
 #include "fonts.h"
 #include "graphics.h"
-#include "int.h"
 #include "queue.h"
 #include "mouse.h"
 #include "keyboard.h"
 #include "memory.h"
 #include "layer.h"
 #include "window.h"
+#include "timer.h"
 
 lm::Layer* layer_back;
 lm::Layer* layer_mouse;
 
 static char mouse_info[20];
 static char mem_info[128];
+static char str_buff[128];
 
 void init_system();
 void init_layer();
+
+void handle_keyboard();
+void handle_mouse();
 
 int main(void) {
 
@@ -25,7 +29,6 @@ int main(void) {
 
     Window* log_win = create_window(scrn_w-370, 20, 300, 150, "Log");
     log_win->show();
-    static char str_buff[128];
     // 显示 分辨率信息
     sprintf(str_buff, "> VRAM:   0x%x", vram);
     draw_string(str_buff, 0, 0, White, log_win);
@@ -43,40 +46,15 @@ int main(void) {
     counter_win->show();
     Window* cover_win = create_window(50, 70, 200, 200, "Cover");
     cover_win->show();
-    int count = 0;
+
     while(true) {
         cli();
-        draw_string(count++, 0, 0, White, counter_win);
-        draw_string(count, 0, 0, White, cover_win);
-        if (!keyboard_buff.empty()) {
-            uint8_t data = keyboard_buff.front();
-            keyboard_buff.pop();
-            sti();
-        }
-        if (!mouse_buff.empty()) {
-            int mouse_date_size = 3;
-            static int8_t data[3];  // 有符号接收
-            static int read_status;
-            //舍弃刚开始0xfa
-            if (is_mouse_init == false && mouse_buff.front() == 0xfa) {
-                is_mouse_init = true;
-                mouse_buff.pop();  
-                read_status = 0;
-                sti();
-            } else if (is_mouse_init) { // 初始化完成
-                data[read_status++] = mouse_buff.front();
-                mouse_buff.pop();
-                sti();
-                if (read_status == mouse_date_size) { // 读完2字节
-                    Mouse tm = mouse;
-                    mouse_decode(data);
-                    lm::slide(layer_mouse, mouse.x, mouse.y);  
-                    sprintf(mouse_info, "> (%d, %d)      ", mouse.x, mouse.y);
-                    draw_string(mouse_info, 0, 16*4, White, log_win);
-                    read_status = 0;
-                } 
-            }
-        }
+        draw_string(now(), 0, 0, White, counter_win);
+        draw_string(now(), 0, 0, White, cover_win);
+        handle_keyboard();
+        handle_mouse();
+        sprintf(mouse_info, "> (%d, %d)      ", mouse.x, mouse.y);
+        draw_string(mouse_info, 0, 16*4, White, log_win);
         sti(); 
     }
     return 0;
@@ -86,14 +64,16 @@ int main(void) {
 void init_system() {
     mm::init();
     int idt = get_idt();
+    set_idt_seg((IDT_Descriptor*)idt + 0x20, (int)asm_response_pit, 8, 0x008e);
     set_idt_seg((IDT_Descriptor*)idt + 0x21, (int)asm_response_keyboard, 8, 0x008e);
     set_idt_seg((IDT_Descriptor*)idt + 0x2c, (int)asm_response_mouse, 8, 0x008e);
 
-    out_byte(0x21, 0b11111001); /* 开放PIC1和键盘中断(11111001) */
+    out_byte(0x21, 0b11111000); /* PIT,开放PIC1和键盘中断(11111000) */
 	out_byte(0xa1, 0b11101111); /* 开放鼠标中断(11101111) */
 
     init_keyboard();
     enable_mouse();
+    init_pit(); // 定时器
     is_mouse_init = false;
 
     scrn_w = *(uint16_t*)(0x90020);
@@ -121,4 +101,37 @@ void init_layer() {
     lm::slide(layer_mouse, mouse.x, mouse.y);
     lm::updown(layer_mouse, 1);
     draw_cursor(0, 0, layer_mouse);
+}
+
+void handle_keyboard() {
+    if (!keyboard_buff.empty()) {
+        uint8_t data = keyboard_buff.front();
+        keyboard_buff.pop();
+        sti();
+    }
+}
+
+void handle_mouse() {
+    if (!mouse_buff.empty()) {
+        int mouse_date_size = 3;
+        static int8_t data[3];  // 有符号接收
+        static int read_status;
+        //舍弃刚开始0xfa
+        if (is_mouse_init == false && mouse_buff.front() == 0xfa) {
+            is_mouse_init = true;
+            mouse_buff.pop();  
+            read_status = 0;
+            sti();
+        } else if (is_mouse_init) { // 初始化完成
+            data[read_status++] = mouse_buff.front();
+            mouse_buff.pop();
+            sti();
+            if (read_status == mouse_date_size) { // 读完2字节
+                Mouse tm = mouse;
+                mouse_decode(data);
+                lm::slide(layer_mouse, mouse.x, mouse.y);  
+                read_status = 0;
+            } 
+        }
+    }
 }

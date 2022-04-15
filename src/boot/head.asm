@@ -9,10 +9,12 @@ pg3         equ     0x4000
 extern main
 extern response_keyboard
 extern response_mouse
+extern response_pit
 
 global get_idt
 global asm_response_keyboard
 global asm_response_mouse
+global asm_response_pit
 global final
 
 _tmp_floppy_area    equ     0x5000;     软盘缓冲区地址
@@ -246,6 +248,10 @@ asm_response_keyboard:
 
 asm_response_mouse:
         call    response_mouse
+        iret
+
+asm_response_pit:
+        call    response_pit
         iret
 
 final:
