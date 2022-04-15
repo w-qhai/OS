@@ -41,10 +41,13 @@ int main(void) {
 
     Window* counter_win = create_window(20, 50, 200, 200, "Counter");
     counter_win->show();
+    Window* cover_win = create_window(50, 70, 200, 200, "Cover");
+    cover_win->show();
     int count = 0;
     while(true) {
         cli();
         draw_string(count++, 0, 0, White, counter_win);
+        draw_string(count, 0, 0, White, cover_win);
         if (!keyboard_buff.empty()) {
             uint8_t data = keyboard_buff.front();
             keyboard_buff.pop();
@@ -96,6 +99,8 @@ void init_system() {
     scrn_w = *(uint16_t*)(0x90020);
     scrn_h = *(uint16_t*)(0x90022);
     vram = (uint8_t*)(*(uint32_t*)(0x90024));
+
+    lm::init(scrn_w, scrn_h);
 }
 
 void init_layer() {

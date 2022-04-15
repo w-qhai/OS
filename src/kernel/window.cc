@@ -32,19 +32,20 @@ Window* create_window(int x, int y, int w, int h, const char title[]) {
         "@@@@@@@@@@@@@@@@"
     };
 
-    fill_box(0, 0,      w, 1, LightGrey, win->back);
-    fill_box(1, 1,      w-1, 2, White, win->back);
-    fill_box(0, 0,      1, h, LightGrey, win->back);
-    fill_box(1, 1,      2, h-1, White, win->back);
-    fill_box(w-2, 1,    w-1, h-1, LightGrey, win->back); 
-    fill_box(w-1, 0,    w, h, DarkGrey, win->back);
-    fill_box(2, 2,      w-3, h-3, Black, win->back); // darkgrey
-    fill_box(3, 3,      w-5, 20, Black, win->back); // Blue
-    fill_box(1, h-2,    w-1, h-1, DarkGrey, win->back);
-    fill_box(0, h-1,    w, h, Black, win->back);
-    fill_box(2, 23, w-3, 1, DarkGrey, win->back);
+    fill_box(0, 0,      w, 1, LightGrey, win->back); // 上边框线
+    fill_box(1, 1,      w-1, 2, White, win->back);   // 上边框线
+    fill_box(0, 0,      1, h, LightGrey, win->back);    // 左边框线
+    fill_box(1, 1,      2, h-1, White, win->back);      // 左边框线
+    fill_box(w-2, 1,    w-1, h-1, LightGrey, win->back);    // 右边框线
+    fill_box(w-1, 0,    w, h, DarkGrey, win->back);         // 右边框线
+    fill_box(1, h-2,    w-1, h-1, DarkGrey, win->back); // 下边框线
+    fill_box(0, h-1,    w, h, Black, win->back);        // 下边框线
+    
+    fill_box(3, 3,      w-5, 20, Black, win->back); // 标题框
+    fill_box(2, 2,      w-3, h-3, Black, win->back); // 内容框
+    fill_box(2, 23, w-3, 1, LightGrey, win->back);   // 分割线
 
-    draw_string(title, 5, 5, White, win->back);
+    draw_string(title, 5, 5, White, win->back); // 标题内容
     for (int i = 0; i < 14; i++) {
         for (int j = 0; j < 16; j++) {
             char c;
