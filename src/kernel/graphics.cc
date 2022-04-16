@@ -63,7 +63,9 @@ void draw_desktop(lm::Layer* layer) {
     Rect splite_line = {0, bg.h-bg.h/20-2, bg.w, 2};
     fill_box(splite_line, White, layer); // 分割线
 
-    Rect btn1 = {tsk.x+tsk.w/100, tsk.y+tsk.h/10, tsk.w/10, tsk.h-tsk.h/4};
+    Rect btn1 = {tsk.x+tsk.w/100, tsk.y+tsk.h/10, tsk.w/15, tsk.h-tsk.h/4};
+    Rect btn2 = {bg.w-btn1.x-btn1.w, btn1.y, btn1.w, btn1.h};
+    
     fill_box(btn1, White, layer);
     btn1.x += 2;
     btn1.y += 2;
@@ -72,7 +74,6 @@ void draw_desktop(lm::Layer* layer) {
     btn1.h -= 2;
     fill_box(btn1, LightGrey, layer);
 
-    Rect btn2 = {bg.w-btn1.x-btn1.w, tsk.y+tsk.h/10, tsk.w/10, tsk.h-tsk.h/4};
     fill_box(btn2, DarkGrey, layer);
     btn2.x += 2;
     btn2.y += 2;

@@ -19,8 +19,8 @@ static char str_buff[128];
 void init_system();
 void init_layer();
 
-void handle_keyboard();
-void handle_mouse();
+uint8_t handle_keyboard();
+uint8_t handle_mouse();
 
 int main(void) {
 
@@ -44,17 +44,68 @@ int main(void) {
 
     Window* counter_win = create_window(20, 50, 200, 200, "Counter");
     counter_win->show();
+
     Window* cover_win = create_window(50, 70, 200, 200, "Cover");
     cover_win->show();
 
+    Window* input_win = create_window(280, 220, 200, 50, "Input");
+    input_win->show();
+
     while(true) {
         cli();
-        draw_string(now(), 0, 0, White, counter_win);
-        draw_string(now(), 0, 0, White, cover_win);
-        handle_keyboard();
+        // 计时器
+        int h, m, s, ms, t = now();
+        ms = t % 100;
+        t /= 100;
+        h = t / 3600;
+        m = t % 3600 / 60;
+        s = t % 60;
+        sprintf(str_buff, "%02d:%02d:%02d:%02d", h, m, s, ms);
+        draw_string(str_buff, 0, 0, White, counter_win);
+        draw_string(str_buff, 0, 0, White, cover_win);
+
+        static char key_table[0x54] = {
+            0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '^', 0, 0,
+            'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '@', '[', 0, 0, 'A', 'S',
+            'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', ':', 0, 0, ']', 'Z', 'X', 'C', 'V',
+            'B', 'N', 'M', ',', '.', '/', 0, '*', 0, ' ', 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, '7', '8', '9', '-', '4', '5', '6', '+', '1',
+            '2', '3', '0', '.'
+	    };
+
+        uint8_t data = handle_keyboard();
+        static int cursor_x = 0;
+        static int cursor_y = 0;
+        if (data != 0 && data < 0x54) {
+            // 打印码
+            sprintf(str_buff, "%d", data);
+            draw_string(str_buff, 0, 16*6, White, input_win);
+            switch (data)
+            {
+            case 14:    // backspace
+                if (cursor_x > 0) {
+                    draw_string(" ", cursor_x, cursor_y, White, input_win);
+                    draw_string("_", cursor_x -= 8, cursor_y, White, input_win);
+                }
+                break;
+            case 28:    // enter
+                break;
+            default:    // 可见字符
+                if (key_table[data]) {
+                    sprintf(str_buff, "%c", key_table[data]);
+                    draw_string(str_buff, cursor_x, cursor_y, White, input_win);
+                    draw_string("_", cursor_x += 8, cursor_y, White, input_win);
+                }
+                break;
+            }
+        }
+
         handle_mouse();
         sprintf(mouse_info, "> (%d, %d)      ", mouse.x, mouse.y);
         draw_string(mouse_info, 0, 16*4, White, log_win);
+        if (mouse.button & 0x01) {
+            input_win->move(mouse.x, mouse.y);
+        }
         sti(); 
     }
     return 0;
@@ -103,15 +154,17 @@ void init_layer() {
     draw_cursor(0, 0, layer_mouse);
 }
 
-void handle_keyboard() {
+uint8_t handle_keyboard() {
     if (!keyboard_buff.empty()) {
         uint8_t data = keyboard_buff.front();
         keyboard_buff.pop();
         sti();
+        return data;
     }
+    return 0;
 }
 
-void handle_mouse() {
+uint8_t handle_mouse() {
     if (!mouse_buff.empty()) {
         int mouse_date_size = 3;
         static int8_t data[3];  // 有符号接收
@@ -134,4 +187,5 @@ void handle_mouse() {
             } 
         }
     }
+    return -1;
 }

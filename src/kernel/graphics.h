@@ -43,6 +43,10 @@ struct Rect {
     int w, h;
 };
 
+struct Point {
+    int x, y;
+};
+
 
 void fill_box(int x, int y, int w, int h, int color, lm::Layer* layer);
 void fill_box(Rect rect, int color, lm::Layer* layer);

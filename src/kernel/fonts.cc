@@ -305,6 +305,6 @@ void draw_string(const int num, int x, int y, int color, Window* win) {
 	y += 25;
 	char str[128];
 	sprintf(str, "%d", num);
-	draw_string(str, x, y, color, win->layer());
+	draw_string(str, x, y, color, win);
 }
 

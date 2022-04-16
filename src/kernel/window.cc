@@ -2,6 +2,7 @@
 
 Window* create_window(int x, int y, int w, int h, const char title[]) {
     Window* win = (Window*)mm::alloc(sizeof(Window));
+    win->cursor_pos = {0, 0};   // 默认光标在0，0处
     win->back = lm::alloc((uint8_t*)mm::alloc(w*h), w, h, -1);
 
     lm::slide(win->back, x, y);
@@ -44,8 +45,12 @@ Window* create_window(int x, int y, int w, int h, const char title[]) {
     fill_box(3, 3,      w-5, 20, Black, win->back); // 标题框
     fill_box(2, 2,      w-3, h-3, Black, win->back); // 内容框
     fill_box(2, 23, w-3, 1, LightGrey, win->back);   // 分割线
+    // fill_box(2, 2,      w-3, h-3, Black, win->back); // 内容框
+
 
     draw_string(title, 5, 5, White, win->back); // 标题内容
+
+    // X
     for (int i = 0; i < 14; i++) {
         for (int j = 0; j < 16; j++) {
             char c;
@@ -58,5 +63,6 @@ Window* create_window(int x, int y, int w, int h, const char title[]) {
             win->back->buff[(5+i)*win->back->width + (win->back->width-21+j)] = c;
         }
     }
+
     return win;
 }
