@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include "queue.h"
+#include "asmfun.h"
 
 #define curosr_size 16
 
@@ -11,6 +12,7 @@ extern int scrn_h;
 
 extern Queue mouse_buff;
 extern Queue keyboard_buff;
+
 struct Mouse {
     int button;
     int x, y;
@@ -19,8 +21,8 @@ struct Mouse {
 extern Mouse mouse;
 
 extern "C" {
-    int get_gdt();
-    int get_idt();
+    GDT_Descriptor* get_gdt();
+    IDT_Descriptor* get_idt();
     int final();
 }
 

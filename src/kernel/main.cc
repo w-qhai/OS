@@ -9,6 +9,16 @@
 #include "window.h"
 #include "timer.h"
 
+struct TSS32 {
+    uint32_t backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;
+	uint32_t eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
+	uint32_t es, cs, ss, ds, fs, gs;
+	uint32_t ldtr, iomap;
+};
+
+TSS32 tss_a, tss_b;
+
+
 lm::Layer* layer_back;
 lm::Layer* layer_mouse;
 
@@ -21,6 +31,12 @@ void init_layer();
 
 uint8_t handle_keyboard();
 uint8_t handle_mouse();
+
+void task_b_main() {
+    while (1) {
+        
+    }
+}
 
 int main(void) {
 
@@ -42,15 +58,44 @@ int main(void) {
         mm::total()>>20, (mm::total()-mm::empty())>>10);
     draw_string(str_buff, 0, 48, White, log_win);
 
-    Window* counter_win = create_window(20, 50, 200, 200, "Counter");
-    counter_win->show();
-
-    Window* cover_win = create_window(50, 70, 200, 200, "Cover");
-    cover_win->show();
+    Window* timer_win = create_window(20, 50, 130, 50, "Timer");
+    timer_win->show();
 
     Window* input_win = create_window(280, 220, 200, 50, "Input");
     input_win->show();
 
+    /*======多任务代码=======*/
+    tss_a.ldtr = 0;
+    tss_a.iomap = 0x40000000;
+
+    int task_b_esp = (int)mm::alloc(64*1024)+64*1024; // 64K栈大小，
+    tss_b.ldtr  = 0;
+    tss_b.iomap = 0x40000000;
+    tss_b.eip   = (int)&task_b_main;
+    tss_b.eflags = 0x00000202; // IF=1
+    tss_b.eax   = 0;
+    tss_b.ecx   = 0;
+    tss_b.edx   = 0;
+    tss_b.ebx   = 0;
+    tss_b.esp   = task_b_esp;
+    tss_b.ebp   = 0;
+    tss_b.esi   = 0;
+    tss_b.edi   = 0;
+    tss_b.es    = 2 * 8;
+    tss_b.cs    = 1 * 8;
+    tss_b.ss    = 2 * 8;
+    tss_b.ds    = 2 * 8;
+    tss_b.fs    = 2 * 8;
+    tss_b.gs    = 2 * 8;
+
+    GDT_Descriptor* gdt = get_gdt();
+    set_gdt_seg(gdt+3, 103, (int)&tss_a, 0x0089);
+    set_gdt_seg(gdt+4, 103, (int)&tss_b, 0x0089);
+
+
+    load_tr(3*8);
+
+    /*======================*/
     while(true) {
         cli();
         // 计时器
@@ -61,17 +106,11 @@ int main(void) {
         m = t % 3600 / 60;
         s = t % 60;
         sprintf(str_buff, "%02d:%02d:%02d:%02d", h, m, s, ms);
-        draw_string(str_buff, 0, 0, White, counter_win);
-        draw_string(str_buff, 0, 0, White, cover_win);
+        draw_string(str_buff, 0, 0, White, timer_win);
 
-        static char key_table[0x54] = {
-            0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '^', 0, 0,
-            'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '@', '[', 0, 0, 'A', 'S',
-            'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', ':', 0, 0, ']', 'Z', 'X', 'C', 'V',
-            'B', 'N', 'M', ',', '.', '/', 0, '*', 0, ' ', 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, '7', '8', '9', '-', '4', '5', '6', '+', '1',
-            '2', '3', '0', '.'
-	    };
+        if(s && s % 2 == 0) {
+            switch_task(0, 4*8);
+        }
 
         uint8_t data = handle_keyboard();
         static int cursor_x = 0;
@@ -100,11 +139,12 @@ int main(void) {
             }
         }
 
-        handle_mouse();
-        sprintf(mouse_info, "> (%d, %d)      ", mouse.x, mouse.y);
-        draw_string(mouse_info, 0, 16*4, White, log_win);
-        if (mouse.button & 0x01) {
-            input_win->move(mouse.x, mouse.y);
+        if (handle_mouse()) {
+            sprintf(mouse_info, "> (%d, %d)      ", mouse.x, mouse.y);
+            draw_string(mouse_info, 0, 16*4, White, log_win);
+            if (mouse.button & 0x01) {
+                input_win->move(mouse.x, mouse.y);
+            }
         }
         sti(); 
     }
@@ -114,10 +154,10 @@ int main(void) {
 
 void init_system() {
     mm::init();
-    int idt = get_idt();
-    set_idt_seg((IDT_Descriptor*)idt + 0x20, (int)asm_response_pit, 8, 0x008e);
-    set_idt_seg((IDT_Descriptor*)idt + 0x21, (int)asm_response_keyboard, 8, 0x008e);
-    set_idt_seg((IDT_Descriptor*)idt + 0x2c, (int)asm_response_mouse, 8, 0x008e);
+    IDT_Descriptor* idt = get_idt();
+    set_idt_seg(idt + 0x20, (int)asm_response_pit, 8, 0x008e);
+    set_idt_seg(idt + 0x21, (int)asm_response_keyboard, 8, 0x008e);
+    set_idt_seg(idt + 0x2c, (int)asm_response_mouse, 8, 0x008e);
 
     out_byte(0x21, 0b11111000); /* PIT,开放PIC1和键盘中断(11111000) */
 	out_byte(0xa1, 0b11101111); /* 开放鼠标中断(11101111) */
@@ -184,8 +224,9 @@ uint8_t handle_mouse() {
                 mouse_decode(data);
                 lm::slide(layer_mouse, mouse.x, mouse.y);  
                 read_status = 0;
+                return 1;
             } 
         }
     }
-    return -1;
+    return 0;
 }

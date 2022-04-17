@@ -10,7 +10,9 @@ extern main
 extern response_keyboard
 extern response_mouse
 extern response_pit
+extern switch_task
 
+global get_gdt
 global get_idt
 global asm_response_keyboard
 global asm_response_mouse
@@ -238,6 +240,10 @@ print_str:                       ;保护模式下显示字符串, 以'$'为结�
 print_over:
         ret
 
+get_gdt:
+        mov     eax, _gdt
+        ret
+
 get_idt:
         mov     eax, _idt
         ret
@@ -256,4 +262,9 @@ asm_response_pit:
 
 final:
         lea     eax, [final]
+        ret
+
+switch_task:
+        ; jmp     far [esp+4]
+        jmp     4*8:0
         ret

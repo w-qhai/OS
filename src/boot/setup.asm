@@ -9,8 +9,9 @@ start:
     MOV		di, 0x30
 
 ;取得画面模式
-VMODE equ   0x101
-    MOV        CX,VMODE
+V640x480 equ   0x101
+V1280x1024 equ   0x107
+    MOV        CX,V640x480
     MOV        AX,0x4f01
     INT        0x10
     CMP        AX,0x004f
@@ -23,7 +24,7 @@ VMODE equ   0x101
     MOV        EAX,[ES:DI+0x28]
     MOV        [0x24],EAX
 
-    MOV        BX,0x400+VMODE
+    MOV        BX,0x400+V640x480
     MOV        AX,0x4f02
     INT        0x10
 

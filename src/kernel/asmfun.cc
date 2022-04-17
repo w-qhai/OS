@@ -1,7 +1,12 @@
 #include "asmfun.h"
 
-void set_gdt_seg() {
-    
+void set_gdt_seg(GDT_Descriptor* gdt, int limit, int base, int more_flags) {
+    gdt->limit_low  = limit & 0xffff;
+    gdt->base_low   = base & 0xffff;
+    gdt->base_mid   = (base>>16) & 0xff;
+    gdt->more_flags  = more_flags & 0xff;
+    gdt->limit_high = ((limit>>16) & 0x0f) | ((more_flags>>8) & 0xf0);
+    gdt->base_high  = (base>>24) & 0xff;
 }
 
 void set_idt_seg(IDT_Descriptor* idt, int offset, int selector, int more_flags) {
@@ -66,5 +71,11 @@ void set_cr0(int cr0_) {
 int get_cr0() {
     __asm {
         mov     eax, cr0
+    }
+}
+
+void load_tr(int tr) {
+    __asm {
+        ltr     tr
     }
 }
