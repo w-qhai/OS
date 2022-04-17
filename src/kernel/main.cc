@@ -33,8 +33,20 @@ uint8_t handle_keyboard();
 uint8_t handle_mouse();
 
 void task_b_main() {
+    Window* mul_task_win = create_window(150, 150, 100, 100, "MulTask");
+    mul_task_win->show();
     while (1) {
-        
+        int h, m, s, ms, t = now();
+        ms = t % 100;
+        t /= 100;
+        h = t / 3600;
+        m = t % 3600 / 60;
+        s = t % 60;
+        sprintf(str_buff, "%02d:%02d:%02d:%02d", h, m, s, ms);
+        draw_string(str_buff, 0, 0, White, mul_task_win);
+        if (s && s % 10 == 0) {
+            switch_task(0, 3*8);
+        }
     }
 }
 
@@ -68,6 +80,7 @@ int main(void) {
     tss_a.ldtr = 0;
     tss_a.iomap = 0x40000000;
 
+
     int task_b_esp = (int)mm::alloc(64*1024)+64*1024; // 64K栈大小，
     tss_b.ldtr  = 0;
     tss_b.iomap = 0x40000000;
@@ -82,8 +95,8 @@ int main(void) {
     tss_b.esi   = 0;
     tss_b.edi   = 0;
     tss_b.es    = 2 * 8;
-    tss_b.cs    = 1 * 8;
-    tss_b.ss    = 2 * 8;
+    tss_b.cs    = 1 * 8;    // 当前代码段
+    tss_b.ss    = 2 * 8;    // 栈段必须在
     tss_b.ds    = 2 * 8;
     tss_b.fs    = 2 * 8;
     tss_b.gs    = 2 * 8;
@@ -91,8 +104,6 @@ int main(void) {
     GDT_Descriptor* gdt = get_gdt();
     set_gdt_seg(gdt+3, 103, (int)&tss_a, 0x0089);
     set_gdt_seg(gdt+4, 103, (int)&tss_b, 0x0089);
-
-
     load_tr(3*8);
 
     /*======================*/
@@ -108,8 +119,9 @@ int main(void) {
         sprintf(str_buff, "%02d:%02d:%02d:%02d", h, m, s, ms);
         draw_string(str_buff, 0, 0, White, timer_win);
 
-        if(s && s % 2 == 0) {
+        if(s && s % 5 == 0) {
             switch_task(0, 4*8);
+            // asm_switch_task(0, 4*8);
         }
 
         uint8_t data = handle_keyboard();

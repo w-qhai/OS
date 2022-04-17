@@ -74,8 +74,8 @@ int get_cr0() {
     }
 }
 
-void load_tr(int tr) {
+void load_tr(int tr_) {
     __asm {
-        ltr     tr
+        ltr     tr_
     }
 }

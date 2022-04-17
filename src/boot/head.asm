@@ -6,19 +6,6 @@ pg1         equ     0x2000
 pg2         equ     0x3000
 pg3         equ     0x4000
 
-extern main
-extern response_keyboard
-extern response_mouse
-extern response_pit
-extern switch_task
-
-global get_gdt
-global get_idt
-global asm_response_keyboard
-global asm_response_mouse
-global asm_response_pit
-global final
-
 _tmp_floppy_area    equ     0x5000;     软盘缓冲区地址
 len_floppy_area     equ     0x400;      缓冲区大小1KB
 [bits 32]
@@ -227,18 +214,19 @@ _gdt: dq 0x0000000000000000 ;NULL descriptor */
       dq 0x0000000000000000 ;TEMPORARY - don't use */
       times 252 dq 0        ;space for LDT's and TSS's etc */ #
 
-print_str:                       ;保护模式下显示字符串, 以'$'为结束标记
-        mov  bl ,[ds:esi]
-        cmp  bl, '$'
-        je   print_over
-        mov  byte [ds:edi],bl
-        inc  edi
-        mov  byte [ds:edi], cl  ;字符红色 
-        inc  esi
-        inc  edi
-        jmp  print_str
-print_over:
-        ret
+
+extern main
+extern response_keyboard
+extern response_mouse
+extern response_pit
+extern switch_task
+
+global get_gdt
+global get_idt
+global asm_response_keyboard
+global asm_response_mouse
+global asm_response_pit
+global final
 
 get_gdt:
         mov     eax, _gdt
@@ -265,6 +253,5 @@ final:
         ret
 
 switch_task:
-        ; jmp     far [esp+4]
-        jmp     4*8:0
+        jmp     far [esp+4]
         ret
