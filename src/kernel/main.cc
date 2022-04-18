@@ -42,9 +42,10 @@ void task_b_main() {
         h = t / 3600;
         m = t % 3600 / 60;
         s = t % 60;
+        t *= 100;
         sprintf(str_buff, "%02d:%02d:%02d:%02d", h, m, s, ms);
         draw_string(str_buff, 0, 0, White, mul_task_win);
-        if (s && s % 10 == 0) {
+        if (t % 4 == 0) {
             switch_task(0, 3*8);
         }
     }
@@ -116,12 +117,12 @@ int main(void) {
         h = t / 3600;
         m = t % 3600 / 60;
         s = t % 60;
+        t *= 100;
         sprintf(str_buff, "%02d:%02d:%02d:%02d", h, m, s, ms);
         draw_string(str_buff, 0, 0, White, timer_win);
 
-        if(s && s % 5 == 0) {
+        if(t % 2 == 0) {
             switch_task(0, 4*8);
-            // asm_switch_task(0, 4*8);
         }
 
         uint8_t data = handle_keyboard();

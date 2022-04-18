@@ -226,7 +226,6 @@ global get_idt
 global asm_response_keyboard
 global asm_response_mouse
 global asm_response_pit
-global final
 
 get_gdt:
         mov     eax, _gdt
@@ -237,20 +236,83 @@ get_idt:
         ret
 
 asm_response_keyboard:
+
+        pushad            ;进入中断服务程序首先保存32位寄存器
+
+        push ds           ;再保存所有的段寄存器
+        push es
+        push fs
+        push gs
+        push ss
+        mov  eax,2*8      ;进入断服务程序后所有数据类段寄存器都转到内核段
+        mov ds,eax
+        mov es,eax
+        mov fs,eax
+        mov gs,eax
+        mov ss,eax
+
         call    response_keyboard
+
+        pop ss             ;恢复所有的段寄存器
+        pop gs
+        pop fs
+        pop es
+        pop ds
+        
+        popad              ; 所有32位寄存器出栈恢复
         iret
 
 asm_response_mouse:
+        pushad            ;进入中断服务程序首先保存32位寄存器
+
+        push ds           ;再保存所有的段寄存器
+        push es
+        push fs
+        push gs
+        push ss
+        mov  eax,2*8      ;进入断服务程序后所有数据类段寄存器都转到内核段
+        mov ds,eax
+        mov es,eax
+        mov fs,eax
+        mov gs,eax
+        mov ss,eax
+
         call    response_mouse
+
+        pop ss             ;恢复所有的段寄存器
+        pop gs
+        pop fs
+        pop es
+        pop ds
+        
+        popad              ; 所有32位寄存器出栈恢复
         iret
 
 asm_response_pit:
-        call    response_pit
-        iret
+        pushad            ;进入中断服务程序首先保存32位寄存器
 
-final:
-        lea     eax, [final]
-        ret
+        push ds           ;再保存所有的段寄存器
+        push es
+        push fs
+        push gs
+        push ss
+        mov  eax,2*8      ;进入断服务程序后所有数据类段寄存器都转到内核段
+        mov ds,eax
+        mov es,eax
+        mov fs,eax
+        mov gs,eax
+        mov ss,eax
+
+        call    response_pit
+
+        pop ss             ;恢复所有的段寄存器
+        pop gs
+        pop fs
+        pop es
+        pop ds
+        
+        popad              ; 所有32位寄存器出栈恢复
+        iret
 
 switch_task:
         jmp     far [esp+4]
