@@ -7,7 +7,9 @@
 
 class Window {
 public:   
-    static List<Window*, 1024> windows;
+    static Window* windows[1024];
+    static int count;
+    int wid;
     lm::Layer* back;
     int x;
     int y;
@@ -15,19 +17,17 @@ public:
     int width;
     int height;
     char* title;
-public:
     Point cursor_pos;
+    bool is_active;
+
+public:
     friend Window* create_window(int x, int y, int w, int h, const char title[]);
     inline lm::Layer* layer() {
         return this->back;
     }
-    inline void show() {
-        lm::updown(this->back, Max_Layer);    // 置顶
-        lm::refresh(x, y, width, height, this->back->z_index);
-        // if (windows.count(this) == 0) {
-        //     windows.append(this);
-        // }
-    }
+    void show();
+    void activate();
+    void deactivate();
     inline void move(int x, int y) {
         lm::slide(back, x, y);
         this->x = x;

@@ -8,6 +8,7 @@
 #include "layer.h"
 #include "window.h"
 #include "timer.h"
+#include "list.hpp"
 
 struct TSS32 {
     uint32_t backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;
@@ -32,32 +33,34 @@ void init_layer();
 uint8_t handle_keyboard();
 uint8_t handle_mouse();
 
+int sel_win_id = -1;
+
 // 任务b处理鼠标事件
 // 主任务处理键盘事件
 void task_b_main() {
-    Window* mul_task_win = create_window(150, 150, 100, 100, "MulTask");
+    Window* mul_task_win = create_window(150, 150, 300, 100, "MulTask");
     mul_task_win->show();
-    while (1) {
-        int h, m, s, ms, t = now();
-        ms = t % 100;
-        t /= 100;
-        h = t / 3600;
-        m = t % 3600 / 60;
-        s = t % 60;
-        t *= 100;
-        sprintf(str_buff, "%02d:%02d:%02d:%02d", h, m, s, ms);
-        draw_string(str_buff, 0, 0, Black, mul_task_win);
+    while (true) {
         // cli();
         if (handle_mouse()) {
             sprintf(mouse_info, "(%d, %d) ", mouse.x, mouse.y);
             draw_string(mouse_info, 0, 16*2, Black, mul_task_win);
+            //  左键按下
             if (mouse.button & 0x01) {
-                mul_task_win->move(mouse.x, mouse.y);
+                Window* win = sel_win_id>=0 ? Window::windows[sel_win_id] : nullptr;
+                if (win != nullptr) { // 窗口存在
+                    int dx = mouse.x - win->x;
+                    int dy = mouse.y - win->y;
+                    if (mouse.x > win->x && mouse.x < win->x + win->width &&
+                        mouse.y > win->y && mouse.y < win->y + win->height ) {
+                        win->move(mouse.x - win->width/2, mouse.y-win->height/2);
+                    }
+                }
             }
         }
         // sti();
 
-        if (t % 4 == 0) {
+        if (now() % 4 == 0) {
             switch_task(0, 3*8);
         }
     }
@@ -69,6 +72,7 @@ int main(void) {
     init_layer();
 
     Window* log_win = create_window(scrn_w-370, 20, 300, 150, "Log");
+    // windows.append(log_win);
     log_win->show();
     // 显示 分辨率信息
     sprintf(str_buff, "> VRAM:   0x%x", vram);
@@ -77,12 +81,13 @@ int main(void) {
     draw_string(str_buff, 0, 16, Black, log_win);
     sprintf(str_buff, "> HEIGHT: %d", scrn_h);
     draw_string(str_buff, 0, 32, Black, log_win);
-    // draw_string(Window::windows.size(), 0, 48, Black, log_win);
+
+    // draw_string(windows.size(), 0, 48, Black, log_win);
     
     Window* timer_win = create_window(20, 50, 130, 50, "Timer");
     timer_win->show();
 
-    Window* input_win = create_window(280, 220, 200, 50, "Input");
+    Window* input_win = create_window(280, 300, 200, 50, "Input");
     input_win->show();
 
     /*======多任务代码=======*/
@@ -106,7 +111,7 @@ int main(void) {
     tss_b.es    = 2 * 8;
     tss_b.cs    = 1 * 8;    // 当前代码段
     tss_b.ss    = 2 * 8;    // 栈段必须在
-    tss_b.ds    = 2 * 8;
+    tss_b.ds    = 1 * 8;
     tss_b.fs    = 2 * 8;
     tss_b.gs    = 2 * 8;
 
@@ -150,6 +155,16 @@ int main(void) {
                     draw_string("_", cursor_x -= 8, cursor_y, Black, input_win);
                 }
                 break;
+            case 15:
+                Window::windows[sel_win_id]->deactivate();
+                sel_win_id++;
+                if (sel_win_id == Window::count) {
+                    sel_win_id = -1;
+                }
+                else {
+                    Window::windows[sel_win_id]->activate();
+                }
+                break;
             case 28:    // enter
                 break;
             default:    // 可见字符
@@ -163,14 +178,6 @@ int main(void) {
                 break;
             }
         }
-
-        // if (handle_mouse()) {
-        //     sprintf(mouse_info, "> MOUSE: (%d, %d)      ", mouse.x, mouse.y);
-        //     draw_string(mouse_info, 0, 16*4, Black, log_win);
-        //     if (mouse.button & 0x01) {
-        //         input_win->move(mouse.x, mouse.y);
-        //     }
-        // }
 
         // 显示内存使用情况
         static int total = 0;
