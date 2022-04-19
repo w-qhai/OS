@@ -55,6 +55,16 @@ public:
         insert(N+1, data);
     }
 
+    int count(const T& data) {
+        int res = 0;
+        for (Node<T>* now = _head->next; now != nullptr; now = now->next) {
+            if (data == now->data) {
+                res++;
+            }
+        }
+        return res;
+    }
+
     void remove(int i) {
         Node<T>* now = _head->next;
 
@@ -82,38 +92,6 @@ public:
 
     uint32_t size() {
         return _length;
-    }
-
-    // 第i个数据之后，第一个遇到的data
-    T* next(T* data, int i) {
-        Node<T>* now = _head->next;
-
-        i = min(i, _length);
-        while (i--) {
-            now = now->next;
-        }
-
-        while (now->data == data) {
-            return now->next;
-        }
-
-        return nullptr;
-    }
-
-    // 第i个数据之前，第一个遇到的
-    T* prev(T* data, int i) {
-        Node<T>* now = _tail->prev;
-
-        i = min(i, _length);
-        while (i--) {
-            now = now->prev;
-        }
-
-        while (now->data == data) {
-            return now->prev;
-        }
-
-        return nullptr;
     }
 
 private:

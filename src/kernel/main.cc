@@ -32,6 +32,8 @@ void init_layer();
 uint8_t handle_keyboard();
 uint8_t handle_mouse();
 
+// 任务b处理鼠标事件
+// 主任务处理键盘事件
 void task_b_main() {
     Window* mul_task_win = create_window(150, 150, 100, 100, "MulTask");
     mul_task_win->show();
@@ -44,7 +46,17 @@ void task_b_main() {
         s = t % 60;
         t *= 100;
         sprintf(str_buff, "%02d:%02d:%02d:%02d", h, m, s, ms);
-        draw_string(str_buff, 0, 0, White, mul_task_win);
+        draw_string(str_buff, 0, 0, Black, mul_task_win);
+        // cli();
+        if (handle_mouse()) {
+            sprintf(mouse_info, "(%d, %d) ", mouse.x, mouse.y);
+            draw_string(mouse_info, 0, 16*2, Black, mul_task_win);
+            if (mouse.button & 0x01) {
+                mul_task_win->move(mouse.x, mouse.y);
+            }
+        }
+        // sti();
+
         if (t % 4 == 0) {
             switch_task(0, 3*8);
         }
@@ -60,17 +72,13 @@ int main(void) {
     log_win->show();
     // 显示 分辨率信息
     sprintf(str_buff, "> VRAM:   0x%x", vram);
-    draw_string(str_buff, 0, 0, White, log_win);
+    draw_string(str_buff, 0, 0 , Black, log_win);
     sprintf(str_buff, "> WIDTH:  %d", scrn_w);
-    draw_string(str_buff, 0, 16, White, log_win);
+    draw_string(str_buff, 0, 16, Black, log_win);
     sprintf(str_buff, "> HEIGHT: %d", scrn_h);
-    draw_string(str_buff, 0, 32, White, log_win);
+    draw_string(str_buff, 0, 32, Black, log_win);
+    // draw_string(Window::windows.size(), 0, 48, Black, log_win);
     
-    // 显示内存使用情况
-    sprintf(str_buff, "> Memory: %dMB, Used: %dKB", 
-        mm::total()>>20, (mm::total()-mm::empty())>>10);
-    draw_string(str_buff, 0, 48, White, log_win);
-
     Window* timer_win = create_window(20, 50, 130, 50, "Timer");
     timer_win->show();
 
@@ -119,8 +127,10 @@ int main(void) {
         s = t % 60;
         t *= 100;
         sprintf(str_buff, "%02d:%02d:%02d:%02d", h, m, s, ms);
-        draw_string(str_buff, 0, 0, White, timer_win);
+        // hh:mm:ss:msms
+        draw_string(str_buff, 0, 0, Black, timer_win);
 
+        // 每20ms切换任务
         if(t % 2 == 0) {
             switch_task(0, 4*8);
         }
@@ -130,34 +140,45 @@ int main(void) {
         static int cursor_y = 0;
         if (data != 0 && data < 0x54) {
             // 打印码
-            sprintf(str_buff, "%d", data);
-            draw_string(str_buff, 0, 16*6, White, input_win);
+            sprintf(str_buff, "> INPUT: %d", data);
+            draw_string(str_buff, 0, 16*5, Black, log_win);
             switch (data)
             {
             case 14:    // backspace
                 if (cursor_x > 0) {
-                    draw_string(" ", cursor_x, cursor_y, White, input_win);
-                    draw_string("_", cursor_x -= 8, cursor_y, White, input_win);
+                    draw_string(" ", cursor_x, cursor_y, Black, input_win);
+                    draw_string("_", cursor_x -= 8, cursor_y, Black, input_win);
                 }
                 break;
             case 28:    // enter
                 break;
             default:    // 可见字符
                 if (key_table[data]) {
-                    sprintf(str_buff, "%c", key_table[data]);
-                    draw_string(str_buff, cursor_x, cursor_y, White, input_win);
-                    draw_string("_", cursor_x += 8, cursor_y, White, input_win);
+                    if (cursor_x+8*3 < input_win->width) {
+                        sprintf(str_buff, "%c", key_table[data]);
+                        draw_string(str_buff, cursor_x, cursor_y, Black, input_win);
+                        draw_string("_", cursor_x += 8, cursor_y, Black, input_win);
+                    }
                 }
                 break;
             }
         }
 
-        if (handle_mouse()) {
-            sprintf(mouse_info, "> (%d, %d)      ", mouse.x, mouse.y);
-            draw_string(mouse_info, 0, 16*4, White, log_win);
-            if (mouse.button & 0x01) {
-                input_win->move(mouse.x, mouse.y);
-            }
+        // if (handle_mouse()) {
+        //     sprintf(mouse_info, "> MOUSE: (%d, %d)      ", mouse.x, mouse.y);
+        //     draw_string(mouse_info, 0, 16*4, Black, log_win);
+        //     if (mouse.button & 0x01) {
+        //         input_win->move(mouse.x, mouse.y);
+        //     }
+        // }
+
+        // 显示内存使用情况
+        static int total = 0;
+        if (total != mm::total()) {
+            sprintf(str_buff, "> Memory: %dMB, Used: %dKB", 
+                mm::total()>>20, (mm::total()-mm::empty())>>10);
+            draw_string(str_buff, 0, 48, Black, log_win);
+            total = mm::total();
         }
         sti(); 
     }
@@ -183,6 +204,9 @@ void init_system() {
     scrn_w = *(uint16_t*)(0x90020);
     scrn_h = *(uint16_t*)(0x90022);
     vram = (uint8_t*)(*(uint32_t*)(0x90024));
+    // scrn_w = 320;
+    // scrn_h = 200;
+    // vram = (uint8_t*)0xa0000;
 
     lm::init(scrn_w, scrn_h);
 }

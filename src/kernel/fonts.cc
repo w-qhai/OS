@@ -260,7 +260,7 @@ uint8_t fonts[256][16] = {
 	{0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0}
 };
 
-void draw_char(char c, int x, int y, int color, lm::Layer* layer) {
+void draw_char(char c, int x, int y, int color, int bg, lm::Layer* layer) {
     // 字体 16 * 8
     for (int i = 0; i < 16; i++) {
         for (int j = 0; j < 8; j++) {
@@ -268,17 +268,17 @@ void draw_char(char c, int x, int y, int color, lm::Layer* layer) {
 				layer->buff[(i + y) * layer->width + (j + x)] = color;
             }
 			else if (layer->alpha) {
-				layer->buff[(i + y) * layer->width + (j + x)] = layer->alpha;
+				layer->buff[(i + y) * layer->width + (j + x)] = bg;
 			}
         }
     }
 	// lm::refresh(layer->x+x, layer->y+y, 8, 16, layer->z_index);
 }
 
-void draw_string(const char* str, int x, int y, int color, lm::Layer* layer) {
+void draw_string(const char* str, int x, int y, int color, int bg, lm::Layer* layer) {
 	int len = strlen(str);
     for (int i = 0; i < len; i++) {
-        draw_char(str[i], x + i * 8, y, color, layer);
+        draw_char(str[i], x + i * 8, y, color, bg, layer);
     }
 	if (layer->alpha) {
 		lm::refresh(layer->x+x, layer->y+y, len*8, 16, layer->z_index-1);
@@ -289,20 +289,20 @@ void draw_string(const char* str, int x, int y, int color, lm::Layer* layer) {
 }
 
 void draw_string(const char* str, int x, int y, int color, Window* win) {
-	x += 5;
-	y += 25;
-	draw_string(str, x, y, color, win->layer());
+	x += 7;
+	y += 30;
+	draw_string(str, x, y, color, win->bg, win->layer());
 }
 
-void draw_string(const int num, int x, int y, int color, lm::Layer* layer) {
+void draw_string(const int num, int x, int y, int color, int bg, lm::Layer* layer) {
 	char str[128];
 	sprintf(str, "%d", num);
-	draw_string(str, x, y, color, layer);
+	draw_string(str, x, y, color, bg, layer);
 }
 
 void draw_string(const int num, int x, int y, int color, Window* win) {
-	x += 5;
-	y += 25;
+	// x += 5;
+	// y += 25;
 	char str[128];
 	sprintf(str, "%d", num);
 	draw_string(str, x, y, color, win);
