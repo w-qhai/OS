@@ -1,6 +1,6 @@
 #include "mouse.h"
 Mouse mouse;
-Queue<uint8_t, MOUSE_BUFF_SIZE> mouse_buff;
+CirQueue<uint8_t, MOUSE_BUFF_SIZE> mouse_buff;
 bool is_mouse_init = false;
 void enable_mouse() {
     while (in_byte(0x64) & 0x02);

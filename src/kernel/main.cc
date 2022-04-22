@@ -237,6 +237,8 @@ void init_layer() {
     draw_desktop(layer_back);
 
 //==============鼠标层==============
+    mouse.x = scrn_w / 2;
+    mouse.y = scrn_h / 2;
     layer_mouse = lm::alloc(
         (uint8_t*)mm::alloc(curosr_size*curosr_size), 
         curosr_size, curosr_size, 99);
@@ -244,6 +246,7 @@ void init_layer() {
     lm::slide(layer_mouse, mouse.x, mouse.y);
     lm::updown(layer_mouse, 1);
     draw_cursor(0, 0, layer_mouse);
+
 }
 
 uint8_t handle_keyboard() {

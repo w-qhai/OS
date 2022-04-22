@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../graphics/graphics.h"
-#include "../graphics/fonts.h"
+#include "graphics.h"
+#include "fonts.h"
 
 #include "../lib/list.hpp"
 #include "../lib/constants.h"

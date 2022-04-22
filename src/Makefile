@@ -41,6 +41,9 @@ $(BINDIR)/asmfun.o: $(LIBDIR)/asmfun.cc Makefile
 	$(CC) $(OPTS) $< -o $@ 
 $(BINDIR)/main.o: $(KERNEDIR)/main.cc Makefile
 	g++ -m32 -fno-use-cxa-atexit -nostdlib -c $< -o $@
+
+$(BINDIR)/%.o: $(LIBDIR)/%.cc $(LIBDIR)/%.h $(LIBDIR)/*.hpp Makefile
+	g++ -m32 -fno-use-cxa-atexit -nostdlib -c $< -o $@
 $(BINDIR)/%.o: $(GRAPHICSDIR)/%.cc $(GRAPHICSDIR)/%.h Makefile
 	g++ -m32 -fno-use-cxa-atexit -nostdlib -c $< -o $@
 $(BINDIR)/%.o: $(MMDIR)/%.cc $(MMDIR)/%.h Makefile@
@@ -48,8 +51,6 @@ $(BINDIR)/%.o: $(MMDIR)/%.cc $(MMDIR)/%.h Makefile@
 $(BINDIR)/%.o: $(DRIVERSDIR)/%.cc $(DRIVERSDIR)/%.h Makefile
 	g++ -m32 -fno-use-cxa-atexit -nostdlib -c $< -o $@
 $(BINDIR)/%.o: $(MMDIR)/%.cc $(MMDIR)/%.h Makefile
-	g++ -m32 -fno-use-cxa-atexit -nostdlib -c $< -o $@
-$(BINDIR)/%.o: $(LIBDIR)/%.cc $(LIBDIR)/%.h $(LIBDIR)/*.hpp Makefile
 	g++ -m32 -fno-use-cxa-atexit -nostdlib -c $< -o $@
 
 run : Makefile $(IMAGE) Makefile

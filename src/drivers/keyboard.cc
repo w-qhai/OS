@@ -1,5 +1,5 @@
 #include "keyboard.h"
-Queue<uint8_t, KEYBOARD_BUFF_SIZE> keyboard_buff;
+CirQueue<uint8_t, KEYBOARD_BUFF_SIZE> keyboard_buff;
 
 char key_table[0x54] = {
 	0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '^', 0, 0,

@@ -5,7 +5,7 @@
 
 #define KEYBOARD_BUFF_SIZE 128
 extern char key_table[0x54];
-extern Queue<uint8_t, KEYBOARD_BUFF_SIZE> keyboard_buff;
+extern CirQueue<uint8_t, KEYBOARD_BUFF_SIZE> keyboard_buff;
 
 void init_keyboard();
 extern "C" {
