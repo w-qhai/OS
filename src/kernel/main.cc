@@ -1,15 +1,16 @@
-#include "asmfun.h"
-#include "fonts.h"
-#include "graphics.h"
-#include "queue.h"
-#include "mouse.h"
-#include "keyboard.h"
-#include "memory.h"
-#include "layer.h"
-#include "window.h"
-#include "timer.h"
-#include "list.hpp"
+#include "../lib/asmfun.h"
+#include "../lib/list.hpp"
 
+#include "../drivers/timer.h"
+#include "../drivers/mouse.h"
+#include "../drivers/keyboard.h"
+
+#include "../graphics/fonts.h"
+#include "../graphics/graphics.h"
+#include "../graphics/layer.h"
+#include "../graphics/window.h"
+
+#include "../mm/memory.h"
 struct TSS32 {
     uint32_t backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;
 	uint32_t eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
@@ -41,7 +42,17 @@ void task_b_main() {
     Window* mul_task_win = create_window(150, 150, 300, 100, "MulTask");
     mul_task_win->show();
     while (true) {
-        // cli();
+        cli();
+        int h, m, s, ms, t = now();
+        ms = t % 100;
+        t /= 100;
+        h = t / 3600;
+        m = t % 3600 / 60;
+        s = t % 60;
+        t *= 100;
+        sprintf(str_buff, "%02d:%02d:%02d:%02d", h, m, s, ms);
+        // hh:mm:ss:msms
+        draw_string(str_buff, 0, 0, Black, mul_task_win);
         if (handle_mouse()) {
             sprintf(mouse_info, "(%d, %d) ", mouse.x, mouse.y);
             draw_string(mouse_info, 0, 16*2, Black, mul_task_win);
@@ -58,7 +69,7 @@ void task_b_main() {
                 }
             }
         }
-        // sti();
+        sti();
 
         if (now() % 4 == 0) {
             switch_task(0, 3*8);
@@ -211,9 +222,6 @@ void init_system() {
     scrn_w = *(uint16_t*)(0x90020);
     scrn_h = *(uint16_t*)(0x90022);
     vram = (uint8_t*)(*(uint32_t*)(0x90024));
-    // scrn_w = 320;
-    // scrn_h = 200;
-    // vram = (uint8_t*)0xa0000;
 
     lm::init(scrn_w, scrn_h);
 }
@@ -242,7 +250,6 @@ uint8_t handle_keyboard() {
     if (!keyboard_buff.empty()) {
         uint8_t data = keyboard_buff.front();
         keyboard_buff.pop();
-        sti();
         return data;
     }
     return 0;

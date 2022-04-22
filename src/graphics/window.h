@@ -1,9 +1,10 @@
 #pragma once
 
-#include "constants.h"
-#include "graphics.h"
-#include "fonts.h"
-#include "list.hpp"
+#include "../graphics/graphics.h"
+#include "../graphics/fonts.h"
+
+#include "../lib/list.hpp"
+#include "../lib/constants.h"
 
 class Window {
 public:   

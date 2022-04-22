@@ -1,6 +1,7 @@
 #pragma once
-#include "constants.h"
-#include "list.hpp"
+
+#include "../lib/constants.h"
+#include "../lib/list.hpp"
 
 namespace mm {
     struct MemoryBlock {

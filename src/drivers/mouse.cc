@@ -1,5 +1,7 @@
 #include "mouse.h"
-bool is_mouse_init = false; 
+Mouse mouse;
+Queue<uint8_t, MOUSE_BUFF_SIZE> mouse_buff;
+bool is_mouse_init = false;
 void enable_mouse() {
     while (in_byte(0x64) & 0x02);
 	out_byte(0x64, 0xd4);
@@ -8,7 +10,7 @@ void enable_mouse() {
 }
 
 void response_mouse() {
-    unsigned char data = in_byte(0x0060);
+    uint8_t data = in_byte(0x0060);
     mouse_buff.push(data);
     out_byte(0xa0, 0x64);
     out_byte(0x20, 0x62);
@@ -17,15 +19,6 @@ void response_mouse() {
 
 void mouse_decode(const int8_t data[]) {
     mouse.button = data[0] & 0x07;  // 取后三位
-    if (mouse.button & 0x01) {
-
-    }
-    else if (mouse.button & 0x02) {
-        
-    }
-    else if (mouse.button & 0x04) {
-
-    }
 
     mouse.x += data[1];
     mouse.y -= data[2];

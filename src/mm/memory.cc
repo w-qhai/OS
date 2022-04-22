@@ -47,11 +47,15 @@ void* mm::alloc(uint32_t size) {
 
 int mm::free(void* addr, uint32_t size) {
     uint32_t i, iaddr = (uint32_t)addr;
-    for (i = 0; i < blocks.size(); i++) {
+    uint32_t len = blocks.size();
+    for (i = 0; i < len; i++) {
         if (blocks.at(i).addr > iaddr) {
             MemoryBlock block = {iaddr, size};
             blocks.insert(i, block);
 
+            if (i+1 >= blocks.size()) {
+                break;
+            }
             if (blocks.at(i).addr + blocks.at(i).size == blocks.at(i+1).addr) {
                 blocks.at(i).size += blocks.at(i+1).size;
                 blocks.remove(i+1);

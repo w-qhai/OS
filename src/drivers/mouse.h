@@ -1,11 +1,16 @@
 #pragma once
 
-#include "constants.h"
-#include "asmfun.h"
-#include "graphics.h"
-#include "fonts.h"
+#include "../lib/asmfun.h"
+#include "../lib/queue.hpp"
 
-extern bool is_mouse_init; 
+struct Mouse {
+    int button;
+    int x, y;
+};
+#define MOUSE_BUFF_SIZE 3*128
+extern Mouse mouse;
+extern bool is_mouse_init;
+extern Queue<uint8_t, MOUSE_BUFF_SIZE> mouse_buff;
 
 void enable_mouse();
 void mouse_decode(const int8_t data[]);

@@ -1,24 +1,28 @@
 #pragma once
 
 #include <cstdint>
-#include "queue.h"
-#include "asmfun.h"
 
 #define curosr_size 16
+
+struct GDT_Descriptor
+{
+    uint16_t limit_low, base_low;
+    uint8_t base_mid, more_flags;
+    uint8_t limit_high, base_high;
+};
+
+struct IDT_Descriptor {
+    uint16_t offset_low, selector;
+    uint8_t dw_count, more_flags;
+    uint16_t offset_high;
+};
+
+void set_gdt_seg(GDT_Descriptor* gdt, int limit, int base, int more_flags);
+void set_idt_seg(IDT_Descriptor* idt, int offset, int selector, int more_flags);
 
 extern uint8_t* vram;
 extern int scrn_w;
 extern int scrn_h;
-
-extern Queue mouse_buff;
-extern Queue keyboard_buff;
-
-struct Mouse {
-    int button;
-    int x, y;
-};
-
-extern Mouse mouse;
 
 extern "C" {
     GDT_Descriptor* get_gdt();

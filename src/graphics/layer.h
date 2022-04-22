@@ -1,7 +1,7 @@
 #pragma once
 
-#include "constants.h"
-#include "memory.h"
+#include "../lib/constants.h"
+#include "../mm/memory.h"
 #define Max_Layer   256
 
 namespace lm {

@@ -4,21 +4,23 @@ VM2	=	bochs
 CC	= 	clang
 DEL	= 	rm
 
-OPTS    = -m32 -fasm-blocks -c -W
-BOOTDIR	= ./boot
-KERNEDIR= ./kernel
-BINDIR  = ../bin
-IMAGE   = PianOS.img
+OPTS    	= -m32 -fasm-blocks -c -W
+BOOTDIR		= ./boot
+KERNEDIR	= ./kernel
+DRIVERSDIR 	= ./drivers
+GRAPHICSDIR = ./graphics
+LIBDIR		= ./lib
+MMDIR		= ./mm
+BINDIR  	= ../bin
+IMAGE   	= PianOS.img
 
-OBJS = 	$(BINDIR)/constants.o $(BINDIR)/main.o \
-		$(BINDIR)/fonts.o $(BINDIR)/asmfun.o \
-		$(BINDIR)/graphics.o\
-		$(BINDIR)/queue.o \
-		$(BINDIR)/mouse.o $(BINDIR)/keyboard.o \
-		$(BINDIR)/memory.o 		$(BINDIR)/layer.o \
-		$(BINDIR)/window.o 		$(BINDIR)/timer.o
+OBJS = 	$(BINDIR)/asmfun.o $(BINDIR)/constants.o \
+		$(BINDIR)/fonts.o $(BINDIR)/graphics.o $(BINDIR)/window.o $(BINDIR)/layer.o \
+		$(BINDIR)/timer.o $(BINDIR)/mouse.o $(BINDIR)/keyboard.o \
+		$(BINDIR)/memory.o \
+		$(BINDIR)/main.o \
 
-$(IMAGE): $(BINDIR)/bootsect.bin $(BINDIR)/setup.bin $(BINDIR)/head.bin $(OBJS) Makefile $(KERNEDIR)/list.hpp
+$(IMAGE): $(BINDIR)/bootsect.bin $(BINDIR)/setup.bin $(BINDIR)/head.bin $(OBJS) Makefile
 # 1.44MB 可在bochs中使用，以便调试
 	ld $(BINDIR)/head.bin $(OBJS) -e start -melf_i386 -Ttext 0x0 -o $(BINDIR)/PianOS.sys
 	@cp $(BINDIR)/PianOS.sys $(BINDIR)/PianOS.syss
@@ -35,19 +37,23 @@ $(BINDIR)/%.bin: $(BOOTDIR)/%.asm Makefile
 $(BINDIR)/head.bin: $(BOOTDIR)/head.asm Makefile
 	$(AS) -felf32 $(BOOTDIR)/head.asm -o $(BINDIR)/head.bin
 
-$(BINDIR)/asmfun.o: $(KERNEDIR)/asmfun.cc Makefile
+$(BINDIR)/asmfun.o: $(LIBDIR)/asmfun.cc Makefile
 	$(CC) $(OPTS) $< -o $@ 
-
 $(BINDIR)/main.o: $(KERNEDIR)/main.cc Makefile
-#	g++ -fno-stack-protector -m32 -fno-asynchronous-unwind-tables -fno-use-cxa-atexit -fno-pie -fcf-protection=none -mmanual-endbr -c $< -o $@
 	g++ -m32 -fno-use-cxa-atexit -nostdlib -c $< -o $@
-$(BINDIR)/%.o: $(KERNEDIR)/%.cc $(KERNEDIR)/%.h Makefile
-#	$(CC) $(OPTS) $< -o $@ 
-#	g++ -fno-stack-protector -m32 -fno-asynchronous-unwind-tables -fno-use-cxa-atexit -fno-pie -fcf-protection=none -mmanual-endbr -c $< -o $@
+$(BINDIR)/%.o: $(GRAPHICSDIR)/%.cc $(GRAPHICSDIR)/%.h Makefile
+	g++ -m32 -fno-use-cxa-atexit -nostdlib -c $< -o $@
+$(BINDIR)/%.o: $(MMDIR)/%.cc $(MMDIR)/%.h Makefile@
+	g++ -m32 -fno-use-cxa-atexit -nostdlib -c $< -o $@
+$(BINDIR)/%.o: $(DRIVERSDIR)/%.cc $(DRIVERSDIR)/%.h Makefile
+	g++ -m32 -fno-use-cxa-atexit -nostdlib -c $< -o $@
+$(BINDIR)/%.o: $(MMDIR)/%.cc $(MMDIR)/%.h Makefile
+	g++ -m32 -fno-use-cxa-atexit -nostdlib -c $< -o $@
+$(BINDIR)/%.o: $(LIBDIR)/%.cc $(LIBDIR)/%.h $(LIBDIR)/*.hpp Makefile
 	g++ -m32 -fno-use-cxa-atexit -nostdlib -c $< -o $@
 
 run : Makefile $(IMAGE) Makefile
-	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE) -m 128 -vga std
+	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE) -m 32 -vga std
 qemu : Makefile $(IMAGE) Makefile
 	$(VM1) -drive format=raw,if=floppy,file=$(IMAGE)
 bochs: Makefile $(IMAGE) Makefile

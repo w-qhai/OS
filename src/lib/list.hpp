@@ -1,7 +1,7 @@
 #pragma once
 
-#include "constants.h"
 #include <cstdint>
+#include "../lib/constants.h"
 
 template<typename T>
 struct Node {
@@ -35,6 +35,7 @@ public:
     void insert(int i, const T& data) {
         Node<T>* now = _head;
 
+        i = max(0, i);
         i = min(i, _length);
         while (i--) {
             now = now->next;
@@ -68,6 +69,7 @@ public:
     void remove(int i) {
         Node<T>* now = _head->next;
 
+        i = max(0, i);
         i = min(i, _length);
         while (i--) {
             now = now->next;
@@ -82,6 +84,7 @@ public:
     T& at(int i) {
         Node<T>* now = _head->next;
 
+        i = max(0, i);
         i = min(i, _length);
         while (i--) {
             now = now->next;

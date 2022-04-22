@@ -209,7 +209,7 @@ _idt:    times 256  dq 0  ;idt is uninitialized # 256项，每项8字节，填0�
 _gdt: dq 0x0000000000000000 ;NULL descriptor */
 ;       dq 0x00c09a0000000fff ;16Mb */ # 0x08，内核代码段最大长度16MB。
 ;       dq 0x00c0920000000fff ;16Mb */ # 0x10，内核数据段最大长度16MB。
-      dq 0x00c09a000000ffff ;16Mb */ # 0x08，内核代码段最大长度16MB。
+      dq 0x00cf9a000000ffff ;16Mb */ # 0x08，内核代码段最大长度16MB。
       dq 0x00cf92000000ffff ;16Mb */ # 0x10，内核数据段最大长度4GB。
       dq 0x0000000000000000 ;TEMPORARY - don't use */
       times 252 dq 0        ;space for LDT's and TSS's etc */ #

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "constants.h"
-#include "asmfun.h"
-#include "graphics.h"
-#include "fonts.h"
+#include "../lib/asmfun.h"
+#include "../lib/queue.hpp"
 
+#define KEYBOARD_BUFF_SIZE 128
 extern char key_table[0x54];
+extern Queue<uint8_t, KEYBOARD_BUFF_SIZE> keyboard_buff;
 
 void init_keyboard();
 extern "C" {

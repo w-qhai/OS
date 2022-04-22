@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include "constants.h"
 #include "layer.h"
+#include "../lib/constants.h"
 
 class Window;
 
