@@ -7,7 +7,7 @@ struct Mouse {
     int button;
     int x, y;
 };
-#define MOUSE_BUFF_SIZE 3*128
+#define MOUSE_BUFF_SIZE 60
 extern Mouse mouse;
 extern bool is_mouse_init;
 extern CirQueue<uint8_t, MOUSE_BUFF_SIZE> mouse_buff;
