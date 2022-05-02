@@ -18,7 +18,7 @@ OBJS = 	$(BINDIR)/asmfun.o $(BINDIR)/constants.o \
 		$(BINDIR)/fonts.o $(BINDIR)/graphics.o $(BINDIR)/window.o $(BINDIR)/layer.o \
 		$(BINDIR)/timer.o $(BINDIR)/mouse.o $(BINDIR)/keyboard.o \
 		$(BINDIR)/memory.o \
-		$(BINDIR)/main.o \
+		$(BINDIR)/main.o $(BINDIR)/task.o\
 
 $(IMAGE): $(BINDIR)/bootsect.bin $(BINDIR)/setup.bin $(BINDIR)/head.bin $(OBJS) Makefile
 # 1.44MB 可在bochs中使用，以便调试
@@ -41,7 +41,8 @@ $(BINDIR)/asmfun.o: $(LIBDIR)/asmfun.cc Makefile
 	$(CC) $(OPTS) $< -o $@ 
 $(BINDIR)/main.o: $(KERNEDIR)/main.cc Makefile
 	g++ -m32 -fno-use-cxa-atexit -nostdlib -c $< -o $@
-
+$(BINDIR)/%.o: $(KERNEDIR)/%.cc $(KERNEDIR)/%.h Makefile
+	g++ -m32 -fno-use-cxa-atexit -nostdlib -c $< -o $@
 $(BINDIR)/%.o: $(LIBDIR)/%.cc $(LIBDIR)/%.h $(LIBDIR)/*.hpp Makefile
 	g++ -m32 -fno-use-cxa-atexit -nostdlib -c $< -o $@
 $(BINDIR)/%.o: $(GRAPHICSDIR)/%.cc $(GRAPHICSDIR)/%.h Makefile

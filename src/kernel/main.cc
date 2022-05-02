@@ -71,15 +71,7 @@ int main(void) {
     init_layer();
 
     Window* log_win = create_window(scrn_w-370, 20, 300, 150, "Log");
-    // windows.append(log_win);
     log_win->show();
-    // 显示 分辨率信息
-    sprintf(str_buff, "$ VRAM:   0x%x", vram);
-    draw_string(str_buff, 0, 0 , Black, log_win);
-    sprintf(str_buff, "$ WIDTH:  %d", scrn_w);
-    draw_string(str_buff, 0, 16, Black, log_win);
-    sprintf(str_buff, "$ HEIGHT: %d", scrn_h);
-    draw_string(str_buff, 0, 32, Black, log_win);
 
     Window* timer_win = create_window(20, 50, 130, 50, "Timer");
     timer_win->show();
@@ -90,8 +82,6 @@ int main(void) {
     /*======多任务代码=======*/
     tss_a.ldtr = 0;
     tss_a.iomap = 0x40000000;
-
-
     int task_b_esp = (int)mm::alloc(64*1024)+64*1024; // 64K栈大小，
     tss_b.ldtr  = 0;
     tss_b.iomap = 0x40000000;
@@ -106,22 +96,22 @@ int main(void) {
     tss_b.esi   = 0;
     tss_b.edi   = 0;
     tss_b.es    = 2 * 8;
-    tss_b.cs    = 1 * 8;    // 当前代码段
-    tss_b.ss    = 2 * 8;    // 栈段必须在
-    tss_b.ds    = 1 * 8;
+    tss_b.cs    = 1 * 8;    // 当前代码段1
+    tss_b.ss    = 2 * 8;    // 栈段必须在2
+    tss_b.ds    = 2 * 8;
     tss_b.fs    = 2 * 8;
     tss_b.gs    = 2 * 8;
 
-    GDT_Descriptor* gdt = get_gdt();
-    set_gdt_seg(gdt+3, 103, (int)&tss_a, 0x0089);
-    set_gdt_seg(gdt+4, 103, (int)&tss_b, 0x0089);
-    load_tr(3*8);
+    task_init();
+    Task* task_b = task_alloc();
+    task_b->tss = tss_b;
+    task_run(task_b);
 
     tm::Timer timer;
     timer.set_timeout(2);
     timer.start();
 
-
+    // 显示 分辨率信息
     /*======================*/
     while(true) {
         cli();
