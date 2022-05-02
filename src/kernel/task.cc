@@ -55,6 +55,6 @@ void task_switch() {
     // set_timeout(task, timer, 2);
     if (task_ctl.runing_count > 1) {
         task_ctl.now = (task_ctl.now + 1) % task_ctl.runing_count;
+        switch_task(0, task_ctl.tasks[task_ctl.now]->selector);
     }
-    switch_task(0, task_ctl.tasks[task_ctl.now]->selector);
 }

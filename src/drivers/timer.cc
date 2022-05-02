@@ -43,4 +43,7 @@ tm::Time tm::now() {
 void response_pit() {
     out_byte(0x20, 0x60);
     tm::count++;
+    if (tm::count % 2 == 0) {
+        task_switch();
+    }
 }

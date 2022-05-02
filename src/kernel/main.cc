@@ -31,9 +31,9 @@ int sel_win_id = -1;
 // 任务b处理鼠标事件
 // 主任务处理键盘事件
 void task_b_main() {
-    tm::Timer timer;
-    timer.set_timeout(2);
-    timer.start();
+    // tm::Timer timer;
+    // timer.set_timeout(2);
+    // timer.start();
     Window* mul_task_win = create_window(150, 150, 300, 100, "MulTask");
     mul_task_win->show();
     while (true) {
@@ -58,10 +58,6 @@ void task_b_main() {
             }
         }
         sti();
-
-        if(timer.timeout()) {
-            switch_task(0, 3*8);
-        }
     }
 }
 
@@ -107,9 +103,9 @@ int main(void) {
     task_b->tss = tss_b;
     task_run(task_b);
 
-    tm::Timer timer;
-    timer.set_timeout(2);
-    timer.start();
+    // tm::Timer timer;
+    // timer.set_timeout(2);
+    // timer.start();
 
     // 显示 分辨率信息
     /*======================*/
@@ -121,9 +117,9 @@ int main(void) {
         draw_string(str_buff, 0, 0, Black, timer_win);
 
         // 每20ms切换任务
-        if (timer.timeout()) {
-            switch_task(0, 4*8);
-        }
+        // if (timer.timeout()) {
+        //     switch_task(0, 4*8);
+        // }
 
         uint8_t data = handle_keyboard();
         static int cursor_x = 0;

@@ -33,3 +33,5 @@ namespace tm {
     };
     Time now();
 }
+
+void task_switch();
