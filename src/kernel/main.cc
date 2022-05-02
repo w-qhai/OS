@@ -31,10 +31,7 @@ int sel_win_id = -1;
 // 任务b处理鼠标事件
 // 主任务处理键盘事件
 void task_b_main() {
-    // tm::Timer timer;
-    // timer.set_timeout(2);
-    // timer.start();
-    Window* mul_task_win = create_window(150, 150, 300, 100, "MulTask");
+    Window* mul_task_win = create_window(150, 150, 300, 100, "TaskB");
     mul_task_win->show();
     while (true) {
         cli();
@@ -61,65 +58,19 @@ void task_b_main() {
     }
 }
 
-int main(void) {
-
-    init_system();
-    init_layer();
-
-    Window* log_win = create_window(scrn_w-370, 20, 300, 150, "Log");
-    log_win->show();
-
+void task_c_main() {
     Window* timer_win = create_window(20, 50, 130, 50, "Timer");
     timer_win->show();
 
     Window* input_win = create_window(280, 300, 200, 50, "Input");
     input_win->show();
 
-    /*======多任务代码=======*/
-    tss_a.ldtr = 0;
-    tss_a.iomap = 0x40000000;
-    int task_b_esp = (int)mm::alloc(64*1024)+64*1024; // 64K栈大小，
-    tss_b.ldtr  = 0;
-    tss_b.iomap = 0x40000000;
-    tss_b.eip   = (int)&task_b_main;
-    tss_b.eflags = 0x00000202; // IF=1
-    tss_b.eax   = 0;
-    tss_b.ecx   = 0;
-    tss_b.edx   = 0;
-    tss_b.ebx   = 0;
-    tss_b.esp   = task_b_esp;
-    tss_b.ebp   = 0;
-    tss_b.esi   = 0;
-    tss_b.edi   = 0;
-    tss_b.es    = 2 * 8;
-    tss_b.cs    = 1 * 8;    // 当前代码段1
-    tss_b.ss    = 2 * 8;    // 栈段必须在2
-    tss_b.ds    = 2 * 8;
-    tss_b.fs    = 2 * 8;
-    tss_b.gs    = 2 * 8;
-
-    task_init();
-    Task* task_b = task_alloc();
-    task_b->tss = tss_b;
-    task_run(task_b);
-
-    // tm::Timer timer;
-    // timer.set_timeout(2);
-    // timer.start();
-
-    // 显示 分辨率信息
-    /*======================*/
     while(true) {
         cli();
         // 计时器
         tm::Time now = tm::now();
         sprintf(str_buff, "%02d:%02d:%02d:%02d", now.h, now.m, now.s, now.ms);
         draw_string(str_buff, 0, 0, Black, timer_win);
-
-        // 每20ms切换任务
-        // if (timer.timeout()) {
-        //     switch_task(0, 4*8);
-        // }
 
         uint8_t data = handle_keyboard();
         static int cursor_x = 0;
@@ -128,8 +79,6 @@ int main(void) {
         // 处理键盘按键
         if (data != 0 && data < 0x54) {
             // 打印码
-            sprintf(str_buff, "$ INPUT: %d", data);
-            draw_string(str_buff, 0, 16*5, Black, log_win);
             switch (data)
             {
             case 14:    // backspace
@@ -177,14 +126,36 @@ int main(void) {
             }
         }
         // 显示内存使用情况
+        sti(); 
+    }
+}
+
+int main(void) {
+
+    init_system();
+    init_layer();
+
+    
+    Window* log_win = create_window(scrn_w-370, 20, 300, 150, "Log");
+    log_win->show();
+
+    /*======多任务代码=======*/
+    Task* task_a = task_init();
+
+    Task* task_b = task_alloc((void*)task_b_main);
+    task_run(task_b);
+
+    Task* task_c = task_alloc((void*)task_c_main);
+    task_run(task_c);
+
+    while (true) {
         static int total = 0;
         if (total != mm::total()) {
-            sprintf(str_buff, "$ Memory: %dMB, Used: %dKB", 
+            sprintf(str_buff, ">: Memory: %dMB, Used: %dKB", 
                 mm::total()>>20, (mm::total()-mm::empty())>>10);
-            draw_string(str_buff, 0, 48, Black, log_win);
+            draw_string(str_buff, 0, 0, Black, log_win);
             total = mm::total();
         }
-        sti(); 
     }
     return 0;
 }

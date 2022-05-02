@@ -35,6 +35,6 @@ struct TaskCtl {
 extern TaskCtl task_ctl;
 
 Task* task_init();
-Task* task_alloc();
+Task* task_alloc(void* func);
 void task_run(Task* task);
 void task_switch();
