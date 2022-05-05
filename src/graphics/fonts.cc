@@ -292,6 +292,11 @@ void draw_string(const char* str, int x, int y, int color, Window* win) {
 	x += 7;
 	y += 30;
 	draw_string(str, x, y, color, win->bg, win->layer());
+	// win->curx += strlen(str)*8;
+	// if (win->curx >= win->width-16) {
+	// 	win->curx = 0;
+	// 	win->cury += 16;
+	// }
 }
 
 void draw_string(const int num, int x, int y, int color, int bg, lm::Layer* layer) {

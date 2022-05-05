@@ -19,6 +19,7 @@ struct TSS32 {
 
 struct Task {
     uint32_t selector, flags;
+    int priority;
     TSS32 tss;
 };
 
@@ -36,5 +37,6 @@ extern TaskCtl task_ctl;
 
 Task* task_init();
 Task* task_alloc(void* func);
-void task_run(Task* task);
+void task_run(Task* task, int priority);
 void task_switch();
+// void task_sleep(Task* task);

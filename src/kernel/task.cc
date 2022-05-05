@@ -12,6 +12,7 @@ Task* task_init() {
 
     // 当前执行的程序，已经变成一个任务了
     Task* task = task_alloc(nullptr);
+    task->priority = 2; // 0.02s
     task->flags = RUNING;    // 活动中标志
     task_ctl.runing_count = 1;
     task_ctl.now = 0;
@@ -50,15 +51,51 @@ Task* task_alloc(void* func) {
     return nullptr;
 }
 
-void task_run(Task* task) {
-    task->flags = RUNING; /*活动中标志*/
-    task_ctl.tasks[task_ctl.runing_count] = task;
-    task_ctl.runing_count++;
+void task_run(Task* task, int priority) {
+    if (priority > 0) {
+        task->priority = priority;
+    }
+    if (task->flags != RUNING) {
+        task->flags = RUNING; /*活动中标志*/
+        task_ctl.tasks[task_ctl.runing_count++] = task;
+    }
 }
 
 void task_switch() {
+    task_ctl.timer.set_timeout(2);
     if (task_ctl.runing_count > 1) {
         task_ctl.now = (task_ctl.now + 1) % task_ctl.runing_count;
         switch_task(0, task_ctl.tasks[task_ctl.now]->selector);
     }
 }
+
+// void task_sleep(Task* task) {
+//     char ts = 0;
+//     if (task->flags == RUNING) { // 如果指定任务处于唤醒状态
+//         //  让自己休眠的话，稍后需要进行任务切换
+//         if (task == task_ctl.tasks[task_ctl.now]) {
+//             ts = 1;
+//         }
+
+//         int i;
+//         for (i = 0; i < task_ctl.runing_count; i++) {
+//             if (task_ctl.tasks[i] == task) {
+//                 break;
+//             }
+//         }
+
+//         task_ctl.runing_count--;
+//         // 移动成员
+//         for (; i < task_ctl.runing_count; i++) {
+//             task_ctl.tasks[i] = task_ctl.tasks[i+1];
+//         }
+//         task->flags = 1; // 不在工作状态
+//         if (ts != 0) {
+//             //  任务切换,  如果now的值出现异常，则进行修正
+//             if (task_ctl.now >= task_ctl.runing_count) {
+//                 task_ctl.now = 0;
+//             }
+//             switch_task(0, task_ctl.tasks[task_ctl.now]->selector);
+//         }
+//     }
+// }

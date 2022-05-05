@@ -20,6 +20,7 @@ public:
     char* title;
     Point cursor_pos;
     bool is_active;
+    int curx, cury; // 输入游标所在位置
 
 public:
     friend Window* create_window(int x, int y, int w, int h, const char title[]);

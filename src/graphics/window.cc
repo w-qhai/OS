@@ -26,7 +26,8 @@ Window* create_window(int x, int y, int w, int h, const char title[]) {
     win->is_active = false;
     win->cursor_pos = {0, 0};   // 默认光标在0，0处
     win->back = lm::alloc((uint8_t*)mm::alloc(w*h), w, h, -1);
-
+    win->curx = 0;
+    win->cury = 0;
     lm::slide(win->back, x, y);
     // lm::updown(win->back, -1);
 

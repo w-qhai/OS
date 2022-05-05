@@ -1,4 +1,5 @@
 #include "timer.h"
+#include "../kernel/task.h"
 
 uint32_t tm::count;
 Queue<uint32_t, MAX_TIMER> tm::timer_info;
@@ -20,9 +21,13 @@ void tm::Timer::start() {
 
 void tm::Timer::set_timeout(uint32_t timeout) {
     _timeout = timeout;
+    // _start = count;
 }
 
 bool tm::Timer::timeout() {
+    // if (runing && (count-_start) == _timeout) {
+    //     return true;
+    // }
     if (runing && (count-_start) % _timeout == 0) {
         return true;
     }
@@ -39,10 +44,12 @@ tm::Time tm::now() {
     return time;
 }
 
-
 void response_pit() {
     out_byte(0x20, 0x60);
     tm::count++;
+    // if (task_ctl.timer.timeout()) {
+    //     task_switch();
+    // }
     if (tm::count % 2 == 0) {
         task_switch();
     }

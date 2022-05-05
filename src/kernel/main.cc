@@ -30,17 +30,11 @@ uint8_t handle_mouse();
 int sel_win_id = -1;
 // 任务b处理鼠标事件
 // 主任务处理键盘事件
-void task_b_main() {
-    Window* mul_task_win = create_window(150, 150, 300, 100, "TaskB");
-    mul_task_win->show();
+void task_mouse() {
     while (true) {
         cli();
         tm::Time now = tm::now();
-        sprintf(str_buff, "%02d:%02d:%02d:%02d", now.h, now.m, now.s, now.ms);
-        draw_string(str_buff, 0, 0, Black, mul_task_win);
         if (handle_mouse()) {
-            sprintf(str_buff, "(%d, %d) ", mouse.x, mouse.y);
-            draw_string(str_buff, 0, 16*2, Black, mul_task_win);
             //  左键按下
             if (mouse.button & 0x01) {
                 Window* win = sel_win_id>=0 ? Window::windows[sel_win_id] : nullptr;
@@ -58,36 +52,42 @@ void task_b_main() {
     }
 }
 
-void task_c_main() {
-    Window* timer_win = create_window(20, 50, 130, 50, "Timer");
-    timer_win->show();
-
-    Window* input_win = create_window(280, 300, 200, 50, "Input");
-    input_win->show();
-
+void task_keyboard() {
+    static tm::Timer timer1;
+    timer1.set_timeout(10);
+    timer1.start();
+    int key_shift = 0;
     while(true) {
         cli();
-        // 计时器
-        tm::Time now = tm::now();
-        sprintf(str_buff, "%02d:%02d:%02d:%02d", now.h, now.m, now.s, now.ms);
-        draw_string(str_buff, 0, 0, Black, timer_win);
-
         uint8_t data = handle_keyboard();
-        static int cursor_x = 0;
-        static int cursor_y = 0;
-
+        #define cursor_x  (Window::windows[sel_win_id]->curx)
+        #define cursor_y  (Window::windows[sel_win_id]->cury)
         // 处理键盘按键
-        if (data != 0 && data < 0x54) {
+        // 处理键盘按键
+        if (data == 0x2a) {
+            key_shift = true;
+        }
+        if (data == 0xaa) {
+            key_shift = false;
+        }
+        if (data != 0 & data < 0x80) {
+
+            // draw_string(data, 0, 32, Red, Window::windows[sel_win_id]);
             // 打印码
             switch (data)
             {
             case 14:    // backspace
+                draw_string(" ", cursor_x, cursor_y, Black, Window::windows[sel_win_id]);
                 if (cursor_x > 0) {
-                    draw_string(" ", cursor_x, cursor_y, Black, input_win);
-                    draw_string("_", cursor_x -= 8, cursor_y, Black, input_win);
+                    cursor_x -= 8;
                 }
+                else if (cursor_y > 0) {
+                    cursor_x = (Window::windows[sel_win_id]->width/8*8) - 8*2;
+                    cursor_y -= 16;
+                }
+                draw_string("_", cursor_x, cursor_y, Black, Window::windows[sel_win_id]); 
                 break;
-            case 15:
+            case 15:    // tab
                 Window::windows[sel_win_id]->deactivate();
                 sel_win_id++;
                 if (sel_win_id == Window::count) {
@@ -98,13 +98,19 @@ void task_c_main() {
                 }
                 break;
             case 28:    // enter
+                cursor_x = 0;
+                cursor_y += 16;
                 break;
             default:    // 可见字符
-                if (key_table[data]) {
-                    if (cursor_x+8*3 < input_win->width) {
-                        sprintf(str_buff, "%c", key_table[data]);
-                        draw_string(str_buff, cursor_x, cursor_y, Black, input_win);
+                if (key_table[key_shift][data]) {
+                    sprintf(str_buff, "%c", key_table[key_shift][data]);
+                    draw_string(str_buff, cursor_x, cursor_y, Black, Window::windows[sel_win_id]);
+                    if (cursor_x+8*3 < Window::windows[sel_win_id]->width) {
                         cursor_x += 8;
+                    } 
+                    else {
+                        cursor_x = 0;
+                        cursor_y += 16;
                     }
                 }
                 break;
@@ -113,20 +119,26 @@ void task_c_main() {
 
         // 光标闪烁
         static int counter=0;
-        static tm::Timer timer1;
-        timer1.set_timeout(10);
-        timer1.start();
         if (timer1.timeout()) {
+            timer1.set_timeout(10);
             counter = !counter;
             if (counter) {
-                draw_string(" ", cursor_x, cursor_y, Black, input_win);
+                draw_string(" ", cursor_x, cursor_y, Black, Window::windows[sel_win_id]);
             }
             else {
-                draw_string("_", cursor_x, cursor_y, Black, input_win);
+                draw_string("_", cursor_x, cursor_y, Black, Window::windows[sel_win_id]);
             }
         }
         // 显示内存使用情况
         sti(); 
+    }
+}
+
+void task_console() {
+    Window* console = create_window(50, 100, 300, 200, "Console");
+    console->show();
+    while (true) {
+
     }
 }
 
@@ -135,27 +147,30 @@ int main(void) {
     init_system();
     init_layer();
 
-    
     Window* log_win = create_window(scrn_w-370, 20, 300, 150, "Log");
     log_win->show();
 
     /*======多任务代码=======*/
     Task* task_a = task_init();
 
-    Task* task_b = task_alloc((void*)task_b_main);
-    task_run(task_b);
+    Task* task_1 = task_alloc((void*)task_mouse);
+    task_run(task_1, 1);
 
-    Task* task_c = task_alloc((void*)task_c_main);
-    task_run(task_c);
+    Task* task_2 = task_alloc((void*)task_keyboard);
+    task_run(task_2, 1);
 
+    Task* task_3 = task_alloc((void*)task_console);
+    task_run(task_3, 1);
+
+    static int total = 0;
+    if (total != mm::total()) {
+        sprintf(str_buff, ">: Memory: %dMB, Used: %dKB", 
+            mm::total()>>20, (mm::total()-mm::empty())>>10);
+        draw_string(str_buff, 0, 0, Black, log_win);
+        total = mm::total();
+    }
+    
     while (true) {
-        static int total = 0;
-        if (total != mm::total()) {
-            sprintf(str_buff, ">: Memory: %dMB, Used: %dKB", 
-                mm::total()>>20, (mm::total()-mm::empty())>>10);
-            draw_string(str_buff, 0, 0, Black, log_win);
-            total = mm::total();
-        }
     }
     return 0;
 }
