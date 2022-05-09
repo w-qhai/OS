@@ -33,7 +33,6 @@ int sel_win_id = -1;
 void task_mouse() {
     while (true) {
         cli();
-        tm::Time now = tm::now();
         if (handle_mouse()) {
             //  左键按下
             if (mouse.button & 0x01) {
@@ -52,17 +51,38 @@ void task_mouse() {
     }
 }
 
+int console_newline(int cursor_y, Window* win) {
+    int lines = (win->height-win->title_height) / 16;
+    if (cursor_y/16 < lines-1) {
+        cursor_y += 16;
+    }
+    else {
+        for (int i = 0; i < lines-1; i++) {
+            int line = i * 16 + win->title_height;
+            for (int y = line; y < line+16; y++) {
+                for (int x = 7; x < win->width-8; x++) {
+                    win->back->buff[x+y*win->width] = 
+                    win->back->buff[x+(y+16)*win->width];
+                }
+            }
+        }
+        win->refresh();
+    }
+    return cursor_y;
+}
+
 void task_keyboard() {
     static tm::Timer timer1;
     timer1.set_timeout(10);
     timer1.start();
     int key_shift = 0;
+
+    char cmdline[30];
     while(true) {
         cli();
         uint8_t data = handle_keyboard();
         #define cursor_x  (Window::windows[sel_win_id]->curx)
         #define cursor_y  (Window::windows[sel_win_id]->cury)
-        // 处理键盘按键
         // 处理键盘按键
         if (data == 0x2a) {
             key_shift = true;
@@ -71,8 +91,8 @@ void task_keyboard() {
             key_shift = false;
         }
         if (data != 0 & data < 0x80) {
-
-            // draw_string(data, 0, 32, Red, Window::windows[sel_win_id]);
+            Window* win = Window::windows[sel_win_id];
+            // draw_string(data, 0, Window::windows[sel_win_id]->height-20, Red, Window::windows[sel_win_id]);
             // 打印码
             switch (data)
             {
@@ -85,7 +105,8 @@ void task_keyboard() {
                     cursor_x = (Window::windows[sel_win_id]->width/8*8) - 8*2;
                     cursor_y -= 16;
                 }
-                draw_string("_", cursor_x, cursor_y, Black, Window::windows[sel_win_id]); 
+                draw_string(" ", cursor_x, cursor_y, Black, Window::windows[sel_win_id]); 
+                cmdline[cursor_x/8-1] = 0;
                 break;
             case 15:    // tab
                 Window::windows[sel_win_id]->deactivate();
@@ -96,10 +117,70 @@ void task_keyboard() {
                 else {
                     Window::windows[sel_win_id]->activate();
                 }
+                draw_string(">", cursor_x, cursor_y, Black, Window::windows[sel_win_id]);
+                cursor_x += 8; 
                 break;
-            case 28:    // enter
-                cursor_x = 0;
-                cursor_y += 16;
+            case 28:    // enter  
+                if (cmdline[0] == 0) { // 空行
+                    
+                }
+                else if (!strcmp(cmdline, "mem")) {
+                    cursor_x = 0;
+                    cursor_y = console_newline(cursor_y, win);
+                    sprintf(str_buff, "total %dMB", (mm::total()>>20)+2);
+                    draw_string(str_buff, cursor_x, cursor_y, Black, win);
+                    cursor_y = console_newline(cursor_y, win);
+                    sprintf(str_buff, "used  %dKB", (mm::total()-mm::empty())>>10);
+                    draw_string(str_buff, cursor_x, cursor_y, Black, win);
+                }
+                else if (!strcmp(cmdline, "dir")) {
+
+                }
+                else if (!strcmp(cmdline, "cls")) {
+                    for (int y = win->title_height; y < win->height-8; y++) {
+                        for (int x = 7; x < win->width-8; x++) {
+                            win->back->buff[x+y*win->width] = LightGrey;
+                        }
+                    }
+                    win->refresh();
+                    draw_string(">", 0, 0, Black, win);
+                    cursor_x = 8;
+                    cursor_y = 0;
+                    continue;
+                }
+                else if (!strcmp(cmdline, "time")) {
+                    cursor_x = 0;
+                    cursor_y = console_newline(cursor_y, win);
+                    tm::Time now = tm::now();
+                    sprintf(str_buff, "%02d:%02d:%02d:%02d", now.h, now.m, now.s, now.ms);
+                    draw_string(str_buff, cursor_x, cursor_y, Black, win);
+                }
+                else {
+                    cursor_x = 0;
+                    cursor_y = console_newline(cursor_y, win);
+                    sprintf(str_buff, "%s is not a command", cmdline);
+                    draw_string(str_buff, cursor_x, cursor_y, Black, win);
+                }
+
+                if (cursor_y/16 + 1 < (win->height-win->title_height) / 16) {
+                    // draw_string(" ", cursor_x, cursor_y, Black, Window::windows[sel_win_id]); 
+                    cursor_x = 0;
+                    cursor_y += 16;
+                    draw_string(">", cursor_x, cursor_y, Black, Window::windows[sel_win_id]);
+                    cursor_x += 8; 
+                }
+                else {
+                    // 屏幕滚动
+                    cursor_y = console_newline(cursor_y, win);
+
+                    cursor_x = 0;
+                    for (int i = 8; i < win->width/8*8-16; i+=8) {
+                        draw_string(" ", i, cursor_y, Black, win);
+                    }
+                    draw_string(">", cursor_x, cursor_y, Black, win);
+                    cursor_x += 8;
+                    win->refresh();
+                }
                 break;
             default:    // 可见字符
                 if (key_table[key_shift][data]) {
@@ -112,6 +193,8 @@ void task_keyboard() {
                         cursor_x = 0;
                         cursor_y += 16;
                     }
+                    cmdline[cursor_x/8-2] = key_table[key_shift][data];
+                    cmdline[cursor_x/8-1] = 0;
                 }
                 break;
             }
@@ -135,7 +218,7 @@ void task_keyboard() {
 }
 
 void task_console() {
-    Window* console = create_window(50, 100, 300, 200, "Console");
+    Window* console = create_window(50, 100, 300, 150, "Console");
     console->show();
     while (true) {
 
@@ -147,11 +230,11 @@ int main(void) {
     init_system();
     init_layer();
 
-    Window* log_win = create_window(scrn_w-370, 20, 300, 150, "Log");
-    log_win->show();
-
     /*======多任务代码=======*/
     Task* task_a = task_init();
+
+    Task* task_3 = task_alloc((void*)task_console);
+    task_run(task_3, 1);
 
     Task* task_1 = task_alloc((void*)task_mouse);
     task_run(task_1, 1);
@@ -159,15 +242,13 @@ int main(void) {
     Task* task_2 = task_alloc((void*)task_keyboard);
     task_run(task_2, 1);
 
-    Task* task_3 = task_alloc((void*)task_console);
-    task_run(task_3, 1);
 
     static int total = 0;
     if (total != mm::total()) {
-        sprintf(str_buff, ">: Memory: %dMB, Used: %dKB", 
-            mm::total()>>20, (mm::total()-mm::empty())>>10);
-        draw_string(str_buff, 0, 0, Black, log_win);
-        total = mm::total();
+        // sprintf(str_buff, ">: Memory: %dMB, Used: %dKB", 
+        //     mm::total()>>20, (mm::total()-mm::empty())>>10);
+        // draw_string(str_buff, 0, 0, Black, log_win);
+        // total = mm::total();
     }
     
     while (true) {

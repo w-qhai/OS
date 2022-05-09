@@ -53,6 +53,7 @@ typedef char * va_list;
 #define va_end(ap)
 
 char * strcpy(char * dest,const char *src);
+int strcmp(const char *cs, const char *ct);
 char * strcat(char * dest, const char * src);
 unsigned int strlen(const char * s);
 void * memset(void * s,int c,unsigned int count);

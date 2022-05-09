@@ -35,6 +35,7 @@ Window* create_window(int x, int y, int w, int h, const char title[]) {
     win->y = y;
     win->width = w;
     win->height = h;
+    win->title_height = 30;
     win->title = (char*)mm::alloc(strlen(title)+1);
     for (int i = 0; title[i]; i++) {
         win->title[i] = title[i];

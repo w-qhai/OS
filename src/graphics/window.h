@@ -17,6 +17,7 @@ public:
     int bg;
     int width;
     int height;
+    int title_height;
     char* title;
     Point cursor_pos;
     bool is_active;
@@ -37,6 +38,9 @@ public:
     }
     inline int background_color() {
         return bg;
+    }
+    inline void refresh() {
+        lm::refresh(x, y, width, height, this->back->z_index);
     }
 };
 
