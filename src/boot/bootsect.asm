@@ -1,6 +1,6 @@
-    jmp     start
-
-%include "boot/config.inc"
+INITSEG     equ     0x9000
+SYSSEG      equ     0x1000
+SETUPSEG    equ     0x9020
 SETUPLEN    equ     4       ; setup占4个扇区
 SYSSIZE     equ     0x3000
 BOOTSEG     equ     0x07c0
@@ -11,7 +11,7 @@ ENDSEG      equ     SYSSEG + SYSSIZE		; 0x4000
 ;创建程序tools/build会使用你指定的值来设置你的根文件系统所在设备号。
 ROOT_DEV    equ     0x306
 
-
+    jmp     start
 start:
     mov     ax, BOOTSEG
     mov     ds, ax
@@ -62,10 +62,6 @@ load_setup_ok:
     mov     [sectors], cl ; 存储扇区数
     mov     ax, INITSEG   ; 重置es段
     mov     es, ax
-
-;   打印欢迎信息
-    mov     si, start_msg
-    call    show_msg
 
 ; 加载系统到0x10000        
     mov     ax, SYSSEG
@@ -195,8 +191,6 @@ sectors:    dw      0
 sread:	    dw      1 + SETUPLEN; 当前扇区
 head:       dw      0			; 当前磁头
 track:	    dw      0			; 当前磁道
-
-start_msg:  db      "Welcome PianOS!!!", '$'
 
 ; 最后填充整个扇区
     times   508 - ($ - $$) db 0

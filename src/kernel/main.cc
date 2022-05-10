@@ -11,6 +11,7 @@
 #include "../graphics/window.h"
 
 #include "../mm/memory.h"
+#include "../fs/fat12.h"
 
 #include "task.h"
 
@@ -92,13 +93,13 @@ void task_keyboard() {
         }
         if (data != 0 & data < 0x80) {
             Window* win = Window::windows[sel_win_id];
-            // draw_string(data, 0, Window::windows[sel_win_id]->height-20, Red, Window::windows[sel_win_id]);
             // 打印码
+            // draw_string(data, 0, Window::windows[sel_win_id]->height-20, Red, Window::windows[sel_win_id]);
             switch (data)
             {
             case 14:    // backspace
                 draw_string(" ", cursor_x, cursor_y, Black, Window::windows[sel_win_id]);
-                if (cursor_x > 0) {
+                if (cursor_x > 8) {
                     cursor_x -= 8;
                 }
                 else if (cursor_y > 0) {
@@ -117,8 +118,10 @@ void task_keyboard() {
                 else {
                     Window::windows[sel_win_id]->activate();
                 }
-                draw_string(">", cursor_x, cursor_y, Black, Window::windows[sel_win_id]);
-                cursor_x += 8; 
+                if (cursor_x == 0 && cursor_y == 0) {
+                    draw_string(">", cursor_x, cursor_y, Black, Window::windows[sel_win_id]);
+                    cursor_x += 8; 
+                }
                 break;
             case 28:    // enter  
                 if (cmdline[0] == 0) { // 空行
@@ -133,8 +136,29 @@ void task_keyboard() {
                     sprintf(str_buff, "used  %dKB", (mm::total()-mm::empty())>>10);
                     draw_string(str_buff, cursor_x, cursor_y, Black, win);
                 }
-                else if (!strcmp(cmdline, "dir")) {
+                else if (!strcmp(cmdline, "ls")) {
 
+                    FileInfo* info = disk_addr;
+                    int j = 0;
+                    while (info[j].reserve1[0]) {
+                        sprintf(str_buff, "filename.ext     %dKB", info[j].size);
+                        for (int i = 0; i < 8; i++) {
+                            str_buff[i] = info[j].name[i];
+                        }
+                        for (int i = 0; i < 3; i++) {
+                            str_buff[9+i] = info[j].ext[i];
+                        }
+                        // 转化为小写
+                        for (int i = 0; i < 12; i++) {
+                            if (str_buff[i] <= 'Z' && str_buff[i] >= 'A') {
+                                str_buff[i] += 32;
+                            }
+                        }
+                        cursor_x = 0;
+                        cursor_y = console_newline(cursor_y, win);
+                        draw_string(str_buff, cursor_x, cursor_y, Black, win);
+                        j++;
+                    }
                 }
                 else if (!strcmp(cmdline, "cls")) {
                     for (int y = win->title_height; y < win->height-8; y++) {
@@ -155,7 +179,7 @@ void task_keyboard() {
                     sprintf(str_buff, "%02d:%02d:%02d:%02d", now.h, now.m, now.s, now.ms);
                     draw_string(str_buff, cursor_x, cursor_y, Black, win);
                 }
-                else {
+                else {  // 错误指令
                     cursor_x = 0;
                     cursor_y = console_newline(cursor_y, win);
                     sprintf(str_buff, "%s is not a command", cmdline);
@@ -219,6 +243,8 @@ void task_keyboard() {
 
 void task_console() {
     Window* console = create_window(50, 100, 300, 150, "Console");
+    // uint32_t data = *(uint32_t*)(0x90030);
+    // draw_string(data, 0, 0, Red, console);
     console->show();
     while (true) {
 

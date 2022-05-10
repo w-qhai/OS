@@ -1,5 +1,9 @@
+INITSEG     equ     0x9000
+SYSSEG      equ     0x1000
+SETUPSEG    equ     0x9020
+
     jmp     start
-    %include    "boot/config.inc"
+
 
 start:
 
@@ -38,31 +42,29 @@ after:
     ; 读取内存大小
     mov     ax, 0xe801
     int     0x15
-    mov     [2], ax
-    mov     [4], bx
+    mov     [0x02], ax
+    mov     [0x04], bx
 
-    ; 读取显卡数据
-    ; mov     ah, 0x0f
-    ; int     0x10
-    ; mov     [6], bx ; bh = display page
-    ; mov     [8], ax ; al = video mode, ah = window width
+; 文件系统读取64KB
+    mov     ax, INITSEG ; 把数据存在原来bootsect的位置
+    MOV		es, ax
+    mov     bx, 0x0030; 移动到0x90030
 
-    ; 检查ega, vga 和一些配置数据
-    ; mov     ah, 0x12
-    ; mov     bl, 0x10
-    ; int     0x10
-
-    ; mov     [10], ax
-    ; mov     [12], bx
-    ; mov     [14], cx
-
+;   
+    mov     al, 1; 扇区数 
+    mov     ah, 0x02; 
+    mov     dl, 0x00; 驱动器号
+    mov     dh, 0x01; 磁头号
+    mov     ch, 0x0a; 磁道号
+    mov     cl, 2; 扇区号
+    int     0x13
     ; 硬盘数据 hd0
     ; mov     ax, 0x0000
     ; mov     ds, ax
-    ; lds     si, [4 * 0x41]
+    ; lds     si, [0x40000]
     ; mov     ax, INITSEG
     ; mov     es, ax
-    ; mov     di, 0x0000
+    ; mov     di, 0x0200
     ; mov     cx, 0x10
     ; rep
     ; movsb
