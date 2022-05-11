@@ -9,27 +9,27 @@ start:
 
     mov     ax, INITSEG ; 把数据存在原来bootsect的位置
     mov     ds, ax
-    MOV		es, ax
-    MOV		di, 0x30
+    mov		es, ax
+    mov		di, 0x30
 
 ;取得画面模式
 V640x480 equ   0x101
 V1280x1024 equ   0x107
-    MOV        CX,V640x480
-    MOV        AX,0x4f01
+    mov        CX,V640x480
+    mov        AX,0x4f01
     INT        0x10
     CMP        AX,0x004f
     JNE        scrn320
 
-    MOV        AX,[ES:DI+0x12]
-    MOV        [0x20],AX
-    MOV        AX,[ES:DI+0x14]
-    MOV        [0x22],AX
-    MOV        EAX,[ES:DI+0x28]
-    MOV        [0x24],EAX
+    mov        AX,[ES:DI+0x12]
+    mov        [0x20],AX
+    mov        AX,[ES:DI+0x14]
+    mov        [0x22],AX
+    mov        EAX,[ES:DI+0x28]
+    mov        [0x24],EAX
 
-    MOV        BX,0x400+V640x480
-    MOV        AX,0x4f02
+    mov        BX,0x400+V640x480
+    mov        AX,0x4f02
     INT        0x10
 
     JMP        after
@@ -45,48 +45,67 @@ after:
     mov     [0x02], ax
     mov     [0x04], bx
 
+
 ; 文件系统读取64KB
-    mov     ax, INITSEG ; 把数据存在原来bootsect的位置
-    MOV		es, ax
-    mov     bx, 0x0030; 移动到0x90030
+    mov     ax, 0x8000 ; 把数据存在原来bootsect的位置
+    mov		es, ax
+    mov     bx, 0x00; 移动到0x90030
 
-;   
-    mov     al, 1; 扇区数 
-    mov     ah, 0x02; 
-    mov     dl, 0x00; 驱动器号
-    mov     dh, 0x01; 磁头号
+; 读取磁盘
+    mov     ax, 0x0211;  读一个扇区
     mov     ch, 0x0a; 磁道号
-    mov     cl, 2; 扇区号
+    mov     cl, 0x02; 扇区号
+    mov     dh, 0x01; 磁头号
+    mov		dl, 0x00; A驱动器
     int     0x13
-    ; 硬盘数据 hd0
-    ; mov     ax, 0x0000
-    ; mov     ds, ax
-    ; lds     si, [0x40000]
-    ; mov     ax, INITSEG
-    ; mov     es, ax
-    ; mov     di, 0x0200
-    ; mov     cx, 0x10
-    ; rep
-    ; movsb
 
-    ; 硬盘数据 hd1
-    ; mov     ax, 0x0000
-    ; mov     ds, ax
-    ; lds     si, [4 * 0x46]
-    ; mov     ax, INITSEG
+    ; mov     ax, es
+    ; add     ax, 0x20
     ; mov     es, ax
-    ; mov     di, 0x0090
-    ; mov     cx, 0x10
-    ; rep
-    ; movsb
+    ; mov     ax, 0x0201;  读一个扇区
+    ; mov     dh, 0x01; 磁头号
+    ; mov     ch, 0x0a; 磁道号
+    ; mov     cl, 3; 扇区号
+    ; mov		dl, 0x00; A驱动器    
+    ; int     0x13
 
+; readloop:
+; 	mov		SI,0			; 记录失败次数寄存器
+
+; retry:
+;     mov		dl, 0x00		; A驱动器
+;     INT		0x13			; 调用磁盘BIOS
+;     JNC		next			; 没出错则跳转到fin
+;     ADD		SI,1			; 往SI加1
+;     CMP		SI,5			; 比较SI与5
+;     JAE		error			; SI >= 5 跳转到error
+;     mov		AH,0x00
+;     mov		DL,0x00			; A驱动器
+;     INT		0x13			; 
+;     JMP		retry
+; next:
+;     mov		AX,ES			; 把内存地址后移0x200（512/16十六进制转换）
+;     ADD		AX,0x0020
+;     mov		ES,AX			; ADD ES,0x020因为没有ADD ES，只能通过AX进行
+;     ADD		CL,1			; 往CL里面加1
+;     CMP		CL,18			; 比较CL与18
+;     JBE		readloop		; CL <= 18 跳转到readloop
+;     mov		CL,1
+;     ADD		DH,1
+;     CMP		DH,2
+;     JB		readloop		; DH < 2 跳转到readloop
+;     mov		DH,0
+;     ADD		CH,1
+;     CMP		CH,10      ; !!!!!!! 读取30个柱面 也就是 30*36个扇区，30*36&512/1024 540KB
+;     JB		readloop		; CH < CYLS 跳转到readloop
+    
     ; 检查是不是hd1
-    mov     ax, 0x1500
-    mov     dl, 0x81
-    int     0x13
-    jc      no_disk1
-    cmp     ah, 3
-    je      is_disk1
+    ; mov     ax, 0x1500
+    ; mov     dl, 0x81
+    ; int     0x13
+    ; jc      no_disk1
+    ; cmp     ah, 3
+    ; je      is_disk1
 
 no_disk1:
     ; mov     ax, INITSEG
@@ -108,7 +127,7 @@ do_move:
     ; 将 0x10000~0x90000处的数据移动到0x00000处
     mov     es, ax
     add     ax, 0x1000  ; 目的段
-    cmp     ax, 0x9000
+    cmp     ax, 0x8000
     jz      end_move
     mov     ds, ax      ; 源段
     mov     si, 0
@@ -205,7 +224,8 @@ gdt_48:
 	dw	512 + gdt, 0x9	; gdt base = 0X9xxxx
     ; 0x0009 2000 + gdt 就是gdt的起始地址
 
-msg:    db  "Load Successfully", '$'
+error:
+    jmp $
 
 [bits 32]   ; 测试32位程序
 test32:

@@ -102,10 +102,10 @@ void task_keyboard() {
                 if (cursor_x > 8) {
                     cursor_x -= 8;
                 }
-                else if (cursor_y > 0) {
-                    cursor_x = (Window::windows[sel_win_id]->width/8*8) - 8*2;
-                    cursor_y -= 16;
-                }
+                // if (cursor_y > 0) {
+                //     cursor_x = (Window::windows[sel_win_id]->width/8*8) - 8*2;
+                //     cursor_y -= 16;
+                // }
                 draw_string(" ", cursor_x, cursor_y, Black, Window::windows[sel_win_id]); 
                 cmdline[cursor_x/8-1] = 0;
                 break;
@@ -137,13 +137,15 @@ void task_keyboard() {
                     draw_string(str_buff, cursor_x, cursor_y, Black, win);
                 }
                 else if (!strcmp(cmdline, "ls")) {
-
                     FileInfo* info = disk_addr;
-                    int j = 0;
+                    int j = 0;  // 文件项数
                     while (info[j].reserve1[0]) {
-                        sprintf(str_buff, "filename.ext     %dKB", info[j].size);
+                        sprintf(str_buff, "filename ext     %dB", info[j].size);
                         for (int i = 0; i < 8; i++) {
                             str_buff[i] = info[j].name[i];
+                        }
+                        if (info[j].ext[0] != ' ') {
+                            str_buff[8] = '.';
                         }
                         for (int i = 0; i < 3; i++) {
                             str_buff[9+i] = info[j].ext[i];
@@ -154,10 +156,77 @@ void task_keyboard() {
                                 str_buff[i] += 32;
                             }
                         }
+                        str_buff[13] = 0;
                         cursor_x = 0;
                         cursor_y = console_newline(cursor_y, win);
                         draw_string(str_buff, cursor_x, cursor_y, Black, win);
                         j++;
+                    }
+                }
+                else if (memcmp(cmdline, "cat ", 4)) {
+                    // 获取文件名
+                    char name[12] = {0};
+                    for (int i = 0; i < 11; i++) {
+                        name[i] = ' ';
+                    }
+                    int j = 0;
+                    for (int i = 4; cmdline[i]; i++) {
+                        if (cmdline[i] == '.' ) {
+                            j = 8;
+                        }
+                        else {
+                            name[j] = cmdline[i];
+                            if ('a' <= name[j] && name[j] <= 'z') {
+                                name[j] -= 32;
+                            }
+                            j++;
+                        }
+                    }
+                    // 开始寻找文件
+                    FileInfo* info = disk_addr;
+                    j = 0;  // 文件项数
+                    bool find_file = false;
+                    while (info[j].reserve1[0]) {
+                        if (memcmp(info[j].name, name, 11)) {
+                            find_file = true;
+                            break;
+                        }
+                        j++;
+                    }
+
+                    if (find_file) {
+                        char* p = (char*)(0x31400-0x2f600+(int)disk_addr);
+                        cursor_x = 0;
+                        cursor_y = console_newline(cursor_y, win);
+                        for (int i = 0; i < info[j].size; i++) {
+                            str_buff[0] = p[i];
+                            str_buff[1] = 0;
+                            // 处理特殊字符
+                            switch (str_buff[0])
+                            {
+                            case '\n':  
+                                cursor_x = -8;
+                                cursor_y = console_newline(cursor_y, win);
+                                break;
+                            
+                            default:
+                                draw_string(str_buff, cursor_x, cursor_y, Black, win);
+                                break;
+                            }
+                            // 下一次在哪输出
+                            if (cursor_x+8*3 < win->width) {
+                                cursor_x += 8;
+                            } 
+                            else {
+                                cursor_x = 0;
+                                cursor_y = console_newline(cursor_y, win);
+                            }
+                        }
+                    }
+                    else {
+                        sprintf(str_buff, "could not found %s", name);
+                        draw_string(str_buff, cursor_x, cursor_y, Black, win);
+
                     }
                 }
                 else if (!strcmp(cmdline, "cls")) {

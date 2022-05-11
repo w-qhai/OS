@@ -386,6 +386,16 @@ int strcmp(const char *cs, const char *ct)
     }
     return 0;
 }
+
+int memcmp(const char *cs, const char *ct, int len)
+{
+    for (int i = 0; i < len; i++) {
+            if (*cs++ != *ct++) {
+                    return false;
+            }
+    }
+    return true;
+}
 /**
  * strlen - Find the length of a string
  * @s: The string to be sized

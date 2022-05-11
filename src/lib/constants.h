@@ -54,6 +54,7 @@ typedef char * va_list;
 
 char * strcpy(char * dest,const char *src);
 int strcmp(const char *cs, const char *ct);
+int memcmp(const char *cs, const char *ct, int len);
 char * strcat(char * dest, const char * src);
 unsigned int strlen(const char * s);
 void * memset(void * s,int c,unsigned int count);
