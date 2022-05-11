@@ -52,52 +52,46 @@ after:
     mov     bx, 0x00; 移动到0x90030
 
 ; 读取磁盘
-    mov     ax, 0x0211;  读一个扇区
-    mov     ch, 0x0a; 磁道号
-    mov     cl, 0x02; 扇区号
-    mov     dh, 0x01; 磁头号
-    mov		dl, 0x00; A驱动器
-    int     0x13
-
-    ; mov     ax, es
-    ; add     ax, 0x20
-    ; mov     es, ax
-    ; mov     ax, 0x0201;  读一个扇区
-    ; mov     dh, 0x01; 磁头号
+    ; mov     ax, 0x0211;  读一个扇区
     ; mov     ch, 0x0a; 磁道号
-    ; mov     cl, 3; 扇区号
-    ; mov		dl, 0x00; A驱动器    
+    ; mov     cl, 0x02; 扇区号
+    ; mov     dh, 0x01; 磁头号
+    ; mov		dl, 0x00; A驱动器
     ; int     0x13
 
-; readloop:
-; 	mov		SI,0			; 记录失败次数寄存器
+    mov     dh, 0x01; 磁头号
+    mov     ch, 0x0a; 磁道号
+    mov     cl, 2; 扇区号
+readloop:
+	mov		SI,0			; 记录失败次数寄存器
 
-; retry:
-;     mov		dl, 0x00		; A驱动器
-;     INT		0x13			; 调用磁盘BIOS
-;     JNC		next			; 没出错则跳转到fin
-;     ADD		SI,1			; 往SI加1
-;     CMP		SI,5			; 比较SI与5
-;     JAE		error			; SI >= 5 跳转到error
-;     mov		AH,0x00
-;     mov		DL,0x00			; A驱动器
-;     INT		0x13			; 
-;     JMP		retry
-; next:
-;     mov		AX,ES			; 把内存地址后移0x200（512/16十六进制转换）
-;     ADD		AX,0x0020
-;     mov		ES,AX			; ADD ES,0x020因为没有ADD ES，只能通过AX进行
-;     ADD		CL,1			; 往CL里面加1
-;     CMP		CL,18			; 比较CL与18
-;     JBE		readloop		; CL <= 18 跳转到readloop
-;     mov		CL,1
-;     ADD		DH,1
-;     CMP		DH,2
-;     JB		readloop		; DH < 2 跳转到readloop
-;     mov		DH,0
-;     ADD		CH,1
-;     CMP		CH,10      ; !!!!!!! 读取30个柱面 也就是 30*36个扇区，30*36&512/1024 540KB
-;     JB		readloop		; CH < CYLS 跳转到readloop
+retry:
+    mov     ax, 0x0201;  读一个扇区 
+    mov		dl, 0x00		; A驱动器
+    INT		0x13			; 调用磁盘BIOS
+    JNC		next			; 没出错则跳转到fin
+    ADD		SI,1			; 往SI加1
+    CMP		SI,5			; 比较SI与5
+    JAE		error			; SI >= 5 跳转到error
+    mov		AH,0x00
+    mov		DL,0x00			; A驱动器
+    INT		0x13			; 
+    JMP		retry
+next:
+    mov		AX,ES			; 把内存地址后移0x200（512/16十六进制转换）
+    ADD		AX,0x0020
+    mov		ES,AX			; ADD ES,0x020因为没有ADD ES，只能通过AX进行
+    ADD		CL,1			; 往CL里面加1
+    CMP		CL,18			; 比较CL与18
+    JBE		readloop		; CL <= 18 跳转到readloop
+    mov		CL,1
+    ADD		DH,1
+    CMP		DH,2
+    JB		readloop		; DH < 2 跳转到readloop
+    mov		DH,0
+    ADD		CH,1
+    CMP		CH,0x0a+5      ; !!!!!!! 读取5个柱面 也就是 5*36个扇区，5*36*512/1024 90K
+    JB		readloop		; CH < CYLS 跳转到readloop
     
     ; 检查是不是hd1
     ; mov     ax, 0x1500

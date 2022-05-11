@@ -127,6 +127,33 @@ void task_keyboard() {
                 if (cmdline[0] == 0) { // 空行
                     
                 }
+                else if (!strcmp(cmdline, "hlt")) {
+                    char name[12] = "HLT     PIN";
+                    FileInfo* info = disk_addr;
+                    int j = 0;  // 文件项数
+                    bool find_file = false;
+                    while (info[j].reserve1[0]) {
+                        if (memcmp(info[j].name, name, 11)) {
+                            find_file = true;
+                            break;
+                        }
+                        j++;
+                    }
+
+                    if (find_file) {
+                        char* p = (char*)((info[j].clustno+12)*512+(int)disk_addr);
+                        void (*func)();
+                        func = (void(*)())p;
+                        func();
+                        // GDT_Descriptor* gdt = get_gdt();
+                        // set_gdt_seg(gdt+150, 1, (uint32_t)hlt, 0x0089);
+                        // switch_task(0, 150*8);
+                    }
+                    else {
+                        sprintf(str_buff, "could not found %s", name);
+                        draw_string(str_buff, cursor_x, cursor_y, Black, win);
+                    }
+                }
                 else if (!strcmp(cmdline, "mem")) {
                     cursor_x = 0;
                     cursor_y = console_newline(cursor_y, win);
@@ -226,7 +253,6 @@ void task_keyboard() {
                     else {
                         sprintf(str_buff, "could not found %s", name);
                         draw_string(str_buff, cursor_x, cursor_y, Black, win);
-
                     }
                 }
                 else if (!strcmp(cmdline, "cls")) {
