@@ -46,8 +46,8 @@ after:
     mov     [0x04], bx
 
 
-; 文件系统读取64KB
-    mov     ax, 0x8000 ; 把数据存在原来bootsect的位置
+; 文件系统读取128KB
+    mov     ax, 0x7000 ; 把数据存在原来bootsect的位置
     mov		es, ax
     mov     bx, 0x00; 移动到0x90030
 
@@ -127,7 +127,7 @@ do_move:
     ; 将 0x10000~0x90000处的数据移动到0x00000处
     mov     es, ax
     add     ax, 0x1000  ; 目的段
-    cmp     ax, 0x8000
+    cmp     ax, 0x7000
     jz      end_move
     mov     ds, ax      ; 源段
     mov     si, 0

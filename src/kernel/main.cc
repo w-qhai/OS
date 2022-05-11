@@ -140,7 +140,7 @@ void task_keyboard() {
                     FileInfo* info = disk_addr;
                     int j = 0;  // 文件项数
                     while (info[j].reserve1[0]) {
-                        sprintf(str_buff, "filename ext     %dB", info[j].size);
+                        sprintf(str_buff, "filename ext   %02d   %dB", info[j].clustno, info[j].size);
                         for (int i = 0; i < 8; i++) {
                             str_buff[i] = info[j].name[i];
                         }
@@ -156,7 +156,7 @@ void task_keyboard() {
                                 str_buff[i] += 32;
                             }
                         }
-                        str_buff[13] = 0;
+                        // str_buff[13] = 0;
                         cursor_x = 0;
                         cursor_y = console_newline(cursor_y, win);
                         draw_string(str_buff, cursor_x, cursor_y, Black, win);
@@ -195,7 +195,7 @@ void task_keyboard() {
                     }
 
                     if (find_file) {
-                        char* p = (char*)(0x31400-0x2f600+(int)disk_addr);
+                        char* p = (char*)((info[j].clustno+12)*512+(int)disk_addr);
                         cursor_x = 0;
                         cursor_y = console_newline(cursor_y, win);
                         for (int i = 0; i < info[j].size; i++) {
@@ -311,7 +311,7 @@ void task_keyboard() {
 }
 
 void task_console() {
-    Window* console = create_window(50, 100, 300, 150, "Console");
+    Window* console = create_window(50, 100, 300, 250, "Console");
     // uint32_t data = *(uint32_t*)(0x90030);
     // draw_string(data, 0, 0, Red, console);
     console->show();
